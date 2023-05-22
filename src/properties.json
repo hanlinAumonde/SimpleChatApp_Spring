@@ -1,0 +1,11 @@
+{
+  "SpringServerApi" : "http://localhost:8080",
+  "getAllOtherUsersApi" : "http://localhost:8080/user/OtherUsers",
+  "planifierChatroomApi" : "http://localhost:8080/user/planifierChatroom",
+  "LoginApi" : "http://localhost:8080/login",
+  "LogoutApi" : "http://localhost:8080/logout",
+  "LoggedUserApi" : "http://localhost:8080/logged_user",
+  "getChatroomOwnedApi" : "http://localhost:8080/user/chatroomsOwned",
+  "getChatroomJoinedApi" : "http://localhost:8080/user/chatroomsJoined",
+  "ChatroomApi" : "http://localhost:8080/user/chatroom/"
+}
