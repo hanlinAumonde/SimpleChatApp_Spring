@@ -6,7 +6,7 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import { Link } from 'react-router-dom';
 
 export default function Navigation({logout}) {
-    const user = useContext(LoginContext);
+    const loggedUser = useContext(LoginContext);
 
     return (
         <nav>
@@ -15,9 +15,9 @@ export default function Navigation({logout}) {
                     <Accordion.Header>User - Info</Accordion.Header>
                     <Accordion.Body>
                         <ListGroup variant="flush">
-                            <ListGroup.Item>Email Address : {user && user.mail}</ListGroup.Item>
-                            <ListGroup.Item>FirstName : {user && user.firstName}</ListGroup.Item>
-                            <ListGroup.Item>LastName : {user && user.lastName}</ListGroup.Item>
+                            <ListGroup.Item>Email Address : {loggedUser && loggedUser.mail}</ListGroup.Item>
+                            <ListGroup.Item>FirstName : {loggedUser && loggedUser.firstName}</ListGroup.Item>
+                            <ListGroup.Item>LastName : {loggedUser && loggedUser.lastName}</ListGroup.Item>
                         </ListGroup>
                         <Button variant="outline-danger" onClick={logout}>Logout</Button>
                     </Accordion.Body>

@@ -10,36 +10,18 @@ import Cookies from "js-cookie";
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import Accueil from "./Components/Accueil";
-import PlanifierChatroom from "./Components/PlanifierChatroom";
-import ListeChatroomOwned from "./Components/ListeChatroomOwned";
-import ListeChatroomJoined from "./Components/ListeChatroomJoined";
-import ModifierChatroom from "./Components/ModifierChatroom";
+import Accueil from "./Pages/Accueil";
+import PlanifierChatroom from "./Pages/PlanifierChatroom";
+import ListeChatroomOwned from "./Pages/ListeChatroomOwned";
+import ListeChatroomJoined from "./Pages/ListeChatroomJoined";
+import ModifierChatroom from "./Pages/ModifierChatroom";
+import Chatroom from "./Pages/Chatroom";
 
 function App() {
     const [user, setUser] = useState({});
     const csrfTk = useRef(null);
 
-    const getLoggedUser = () => {
-        fetch(properties.LoggedUserApi,{
-            credentials: 'include'
-        })
-            .then(response => {
-                if(response.status === 401){
-                    console.log("return to login");
-                    window.location.href = properties.LoginApi;
-                }else{
-                    console.log("user logged");
-                    csrfTk.current = Cookies.get('XSRF-TOKEN');
-                    console.log(csrfTk.current);
-                    return response.json();
-                }
-            })
-            .then((userLogged) => {
-                setUser(userLogged);
-            })
-            .catch(error => console.log(error));
-    }
+
 
     const logout = async () => {
         await fetch(properties.LogoutApi, {
@@ -58,6 +40,25 @@ function App() {
     }
 
     useEffect(() => {
+        const getLoggedUser = () => {
+            fetch(properties.LoggedUserApi,{
+                credentials: 'include'
+            })
+                .then(response => {
+                    if(response.status === 401){
+                        console.log("return to login");
+                        window.location.href = properties.LoginApi;
+                    }else{
+                        console.log("user logged");
+                        csrfTk.current = Cookies.get('XSRF-TOKEN');
+                        return response.json();
+                    }
+                })
+                .then((userLogged) => {
+                    setUser(userLogged);
+                })
+                .catch(error => console.log(error));
+        }
         getLoggedUser();
         const timer = setInterval(getLoggedUser, 1000*60*15);
         return () => clearInterval(timer);
@@ -66,12 +67,13 @@ function App() {
     return (
         <>
             <Header/>
+            {csrfTk.current && user?
             <LoginContext.Provider value={user}> <CsrfTokenContext.Provider value={csrfTk.current}>
                 <Router> <Container fluid> <Row>
-                    <Col xs={3}>
+                    <Col xs={2}>
                         <Navigation logout={logout} />
                     </Col>
-                    <Col xs={9}>
+                    <Col xs={10}>
                         <Routes>
                             <Route path="/" element={<Accueil/>} />
                             <Route path="/userAccueil" element={<Accueil/>} />
@@ -79,10 +81,15 @@ function App() {
                             <Route path="/listeChatroom_Owned" element={<ListeChatroomOwned/>} />
                             <Route path="/listeChatroom_Joined" element={<ListeChatroomJoined/>} />
                             <Route path="/ModifierChatroom/:chatroomId" element={<ModifierChatroom/>} />
+                            <Route path="/Chatroom/:chatroomId" element={<Chatroom/>} />
+                            <Route path="*" element={<h1>404 Not Found</h1>} />
                         </Routes>
                     </Col>
                 </Row> </Container> </Router>
             </CsrfTokenContext.Provider> </LoginContext.Provider>
+            :
+                <h1 className="d-flex justify-content-center align-items-center">Chargement ...</h1>
+            }
             <Footer/>
         </>
     );

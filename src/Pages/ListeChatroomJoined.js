@@ -1,9 +1,8 @@
 import React, {useContext, useEffect, useState} from "react";
-import properties from "../properties";
+import properties from "../properties.json";
 import {Dropdown, DropdownButton, Table} from "react-bootstrap";
 import CsrfTokenContext from "../CsrfTokenContext";
 import LoginContext from "../LoginContext";
-import Button from "react-bootstrap/Button";
 import {Link} from "react-router-dom";
 
 export default function ListeChatroomJoined(){
@@ -12,33 +11,10 @@ export default function ListeChatroomJoined(){
 
     const [chatroomsJoined, setChatroomsJoined] = useState([]);
 
-    /*
     useEffect(() => {
         const getChatroomsJoined = async () => {
             try{
-                const response = await fetch(properties.getChatroomJoinedApi,{
-                    "credentials": "include",
-                    "headers": {
-                        "X-XSRF-TOKEN": csrfToken
-                    }
-                });
-                const chatroomsJoined = await response.json();
-                if(response.status === 401){
-                    window.location.href = properties.LoginApi;
-                }
-                setChatroomsJoined(chatroomsJoined);
-            }
-            catch(error){
-                console.log(error);
-            }
-        }
-        getChatroomsJoined();
-    },[csrfToken]);
-    */
-    useEffect(() => {
-        const getChatroomsJoined = async () => {
-            try{
-                const response = await fetch(properties.getChatroomJoinedApi,{
+                const response = await fetch(properties.getChatroomsByUserApi + loggedUser.id + "/chatrooms/joined",{
                     "credentials": "include",
                     "headers": {
                         "X-XSRF-TOKEN": csrfToken
@@ -46,18 +22,30 @@ export default function ListeChatroomJoined(){
                 });
                 let chatroomsJoined = await response.json();
                 if(response.status === 401){
+                    alert("Error code :" + response.status + " - Reason : " + response.statusText);
                     window.location.href = properties.LoginApi;
                 }
 
                 const promises = chatroomsJoined.map(async (chatroom) => {
-                    const ownerResponse = await fetch(properties.ChatroomApi + chatroom.id + "/owner", {
+                    const ownerResponse = await fetch(properties.ChatroomApi + chatroom.id + "/users/owner", {
                         "credentials": "include",
                         "headers": {
                             "X-XSRF-TOKEN": csrfToken
                         }
                     });
+                    const statusResponse = await fetch(properties.ChatroomApi + chatroom.id + "/status", {
+                        "credentials": "include",
+                        "headers": {
+                            "X-XSRF-TOKEN": csrfToken
+                        }
+                    });
+                    if (ownerResponse.status === 401 || statusResponse.status === 401) {
+                        alert("Error code :" + ownerResponse.status + " - Reason : Not authorized");
+                        window.location.href = properties.LoginApi;
+                    }
                     const owner = await ownerResponse.json();
-                    return { ...chatroom, owner };
+                    const status = await statusResponse.json();
+                    return { ...chatroom, owner , chatroomStatus : status};
                 });
 
                 chatroomsJoined = await Promise.all(promises);
@@ -69,11 +57,11 @@ export default function ListeChatroomJoined(){
             }
         }
         getChatroomsJoined();
-    },[csrfToken]);
+    },[csrfToken, loggedUser]);
 
 
     const handleQuitter = (chatroomId,userId) => {
-        fetch(properties.ChatroomApi + chatroomId + "/userInvited/" + userId, {
+        fetch(properties.ChatroomApi + chatroomId + "/users/invited/" + userId, {
             "method": "DELETE",
             "credentials": "include",
             "headers": {
@@ -82,6 +70,7 @@ export default function ListeChatroomJoined(){
         })
             .then(response => {
                 if (response.status === 401) {
+                    alert("Error code :" + response.status + " - Reason : " + response.statusText);
                     window.location.href = properties.LoginApi;
                 } else if (response.status === 409) {
                     alert("Erreur lors de quitter la Chatroom");
@@ -101,7 +90,7 @@ export default function ListeChatroomJoined(){
     }
 
     return(
-        <main>
+        <main style={{backgroundColor: 'white',border: '2px solid #ccc', padding: '10px',boxShadow: '0 4px 6px #39373D'}}>
             <h1>Liste des Chatrooms Rejointes</h1>
             {chatroomsJoined.length > 0 ? (
             <Table bordered hover variant="dark">
@@ -127,8 +116,8 @@ export default function ListeChatroomJoined(){
                                     Quitter le chatroom
                                 </Dropdown.Item>
                                 <Dropdown.Divider />
-                                <Dropdown.Item>
-                                    <Link to="/">Entrer le chatroom</Link>
+                                <Dropdown.Item disabled={chatroom.chatroomStatus? !chatroom.chatroomStatus : true}>
+                                    <Link to={`/Chatroom/${chatroom.id}`}>Entrer le chatroom</Link>
                                 </Dropdown.Item>
                             </DropdownButton>
                         </td>

@@ -1,0 +1,53 @@
+.main{
+    block-size: calc(100vh - 180px);
+    background-color: white;
+    border: 2px solid #ccc;
+    padding: 10px;
+    box-shadow: 0 4px 6px #39373D;
+}
+
+.h2{
+    height: 100%;
+    min-height: 7vh;
+    max-height: 7vh;
+}
+
+.div{
+    display: flex;
+    justify-content: space-between;
+}
+
+.main .container{
+    margin: 5px;
+    height: 100%;
+    min-height: 55vh;
+    max-height: 55vh;
+}
+
+.form{
+    height: 100%;
+    min-height: 10vh;
+    max-height: 10vh;
+}
+
+.scrollBox{
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column-reverse;
+    border: 2px;
+}
+
+.listGroup{
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.card{
+    width: auto;
+    max-width: 60%;
+    margin: 5px;
+}
+

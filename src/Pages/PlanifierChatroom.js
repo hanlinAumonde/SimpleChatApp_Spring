@@ -1,9 +1,10 @@
 import React, {useContext, useEffect, useState} from "react";
-import properties from "../properties";
+import properties from "../properties.json";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import CsrfTokenContext from "../CsrfTokenContext";
 import Accordion from "react-bootstrap/Accordion";
+import {Badge} from "react-bootstrap";
 
 export default function PlanifierChatroom(){
     const csrfToken = useContext(CsrfTokenContext);
@@ -19,10 +20,10 @@ export default function PlanifierChatroom(){
 
     const inputCheck = (titre,description,duration,startDate,usersInvited) => {
         //le contenu de titre et description ne doit pas contenir des caractères spéciaux : < > / \ { } [ ] ( ) = + * ? ! @ # $ % ^ & | ~ ` ;
-        const regex = /[<>\/\\{}\[\]()=+*?!@#$%^&|~`;]/;
+        const regex = /[<>/\\{}[\]()=+*?!@#$%^&|~`;]/;
         const dateStringFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/;
         if(regex.test(titre) || regex.test(description)){
-            return "Le contenu de titre et description ne doit pas contenir des caractères spéciaux";
+            return "Le contenu de titre et/ou description ne doit pas contenir des caractères spéciaux";
         }
         if(titre.length > 20){
             return "Longueur de titre doit être egal ou plus petit que 20";
@@ -59,7 +60,7 @@ export default function PlanifierChatroom(){
             if (inputCheckResult !== "check passed") {
                 setResultMsg(inputCheckResult);
             }else{
-                const response = await fetch(properties.planifierChatroomApi, {
+                const response = await fetch(properties.ChatroomApi, {
                     method: "POST",
                     headers: {
                         'Content-type': 'application/json; charset=UTF-8',
@@ -76,6 +77,7 @@ export default function PlanifierChatroom(){
                 });
 
                 if(response.status === 401){
+                    alert("Error code :" + response.status + " - Reason : " + response.statusText);
                     window.location.href = properties.LoginApi;
                 } else if(response.status === 409) {
                     setResultMsg("chatroom already exist");
@@ -113,6 +115,7 @@ export default function PlanifierChatroom(){
                 });
                 const users = await response.json();
                 if(response.status === 401){
+                    alert("Error code :" + response.status + " - Reason : " + response.statusText);
                     window.location.href = properties.LoginApi;
                 }
                 setUsers(users);
@@ -124,8 +127,14 @@ export default function PlanifierChatroom(){
     }, [csrfToken]);
 
     return (
-        <Form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit} style={{backgroundColor: 'white',border: '2px solid #ccc', padding: '10px',boxShadow: '0 4px 6px #39373D'}}>
             <h1>Planifier votre chatroom :</h1>
+            {resultMsg ?
+                <div>
+                    {resultMsg === "chatroom added" ? <Badge bg="success">{resultMsg}</Badge> : <Badge bg="danger">{resultMsg}</Badge>}
+                </div>
+                : null
+            }
             <Form.Group className="mb-3" controlId="formBasicTitre">
                 <Form.Label>Titre de la chatroom :</Form.Label>
                 <Form.Control type="titre" placeholder="Entrer le titre du Chatroom"
@@ -170,7 +179,6 @@ export default function PlanifierChatroom(){
                 <Form.Text className="text-muted">Entre 1 -30 jours</Form.Text>
             </Form.Group>
             <Button variant="primary" type="submit">Submit</Button>
-            <div>{resultMsg ? resultMsg : ""}</div>
         </Form>
     );
 }

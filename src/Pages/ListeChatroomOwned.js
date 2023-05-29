@@ -1,18 +1,20 @@
 import React, {useContext, useEffect, useState} from "react";
-import properties from "../properties";
+import properties from "../properties.json";
 import {DropdownButton, Table, Dropdown} from "react-bootstrap";
 import CsrfTokenContext from "../CsrfTokenContext";
 import {Link} from "react-router-dom";
+import LoginContext from "../LoginContext";
 
 export default function ListeChatroomOwned(){
     const csrfToken = useContext(CsrfTokenContext);
+    const loggedUser = useContext(LoginContext);
 
     const [chatroomsOwned, setChatroomsOwned] = useState([]);
 
     useEffect(() => {
         const getChatroomsOwned = async () => {
             try{
-                const response = await fetch(properties.getChatroomOwnedApi,{
+                const response = await fetch(properties.getChatroomsByUserApi + loggedUser.id + "/chatrooms/owned",{
                     "credentials": "include",
                     "headers": {
                         "X-XSRF-TOKEN": csrfToken
@@ -20,6 +22,7 @@ export default function ListeChatroomOwned(){
                 });
                 const chatroomsOwned = await response.json();
                 if(response.status === 401){
+                    alert("Error code :" + response.status + " - Reason : " + response.statusText);
                     window.location.href = properties.LoginApi;
                 }
                 setChatroomsOwned(chatroomsOwned);
@@ -29,7 +32,7 @@ export default function ListeChatroomOwned(){
             }
         }
         getChatroomsOwned();
-    },[csrfToken]);
+    },[csrfToken, loggedUser.id]);
 
     const handleDelete = (chatroomId) => {
         fetch(properties.ChatroomApi + chatroomId, {
@@ -41,6 +44,7 @@ export default function ListeChatroomOwned(){
         })
             .then(response => {
                 if(response.status === 401){
+                    alert("Error code :" + response.status + " - Reason : " + response.statusText);
                     window.location.href = properties.LoginApi;
                 }
                 else if(response.status === 409){
@@ -59,7 +63,7 @@ export default function ListeChatroomOwned(){
     }
 
     return(
-        <main>
+        <main style={{backgroundColor: 'white',border: '2px solid #ccc', padding: '10px',boxShadow: '0 4px 6px #39373D'}}>
             <h1>Liste des Chatrooms Owned :</h1>
             {chatroomsOwned.length > 0 ? (
             <Table bordered hover variant="dark">
@@ -88,7 +92,7 @@ export default function ListeChatroomOwned(){
                                         </Dropdown.Item>
                                         <Dropdown.Divider />
                                         <Dropdown.Item>
-                                            <Link to="/">Entrer le chatroom</Link>
+                                            <Link to={`/Chatroom/${chatroom.id}`}>Entrer le chatroom</Link>
                                         </Dropdown.Item>
                                     </DropdownButton>
                                 </td>
