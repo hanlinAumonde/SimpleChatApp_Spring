@@ -39,6 +39,7 @@ export default function Chatroom(){
         const checkRes = inputMsgCheck(message);
         if (webSocketClient.current !== null && checkRes){
             webSocketClient.current.send(JSON.stringify(message));
+            setMsgSend("");
         }else if(!checkRes){
             setMsgSend("");
         }else{
