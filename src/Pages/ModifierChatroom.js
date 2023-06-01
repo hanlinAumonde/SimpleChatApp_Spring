@@ -6,6 +6,10 @@ import {Form} from "react-bootstrap";
 import Accordion from "react-bootstrap/Accordion";
 import ListGroup from "react-bootstrap/ListGroup";
 import Button from "react-bootstrap/Button";
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import Pagination from "../Components/Pagination";
 
 export default function ModifierChatroom(){
     const csrfToken = useContext(CsrfTokenContext);
@@ -17,7 +21,12 @@ export default function ModifierChatroom(){
         "duration": 1
     });
     const [usersInvited, setUsersInvited] = useState([]);
+    const [usersInvitedPage, setUsersInvitedPage] = useState(0);
+    const [usersInvitedTotalPages, setUsersInvitedTotalPages] = useState(0);
+
     const [usersNotInvited, setUsersNotInvited] = useState([]);
+    const [usersNotInvitedPage, setUsersNotInvitedPage] = useState(0);
+    const [usersNotInvitedTotalPages, setUsersNotInvitedTotalPages] = useState(0);
 
     const modInputCheck = () => {
         const regex = /[<>/\\{}[\]()=+*?!@#$%^&|~`;]/;
@@ -128,38 +137,9 @@ export default function ModifierChatroom(){
         }
     }
 
-    useEffect(() => {
-        getChatroom();
-        getUsersInvited();
-        getUsersNotInvited();
-    },[csrfToken]);
-
-    const getChatroom = async () => {
+    const getUsersInvited = async (page) => {
         try{
-            const response = await fetch(properties.ChatroomApi + chatroomId, {
-                "credentials": "include",
-                "headers": {
-                    "X-XSRF-TOKEN": csrfToken
-                }
-            });
-            const chatroom = await response.json();
-            if(response.status === 401){
-                alert("Error code : " + response.status + " - Reason : Not logged in");
-                window.location.href = properties.LoginApi;
-            }else if(response.status === 404){
-                alert("Chatroom introuvable");
-                window.location.href = properties.LoginApi;
-            }
-            setChatroom(chatroom);
-        }
-        catch(error){
-            console.log(error);
-        }
-    }
-
-    const getUsersInvited = async () => {
-        try{
-            const response = await fetch(properties.ChatroomApi + chatroomId + "/users/invited", {
+            const response = await fetch(properties.ChatroomApi + chatroomId + "/users/invited?page=" + page, {
                 "credentials": "include",
                 "headers": {
                     "X-XSRF-TOKEN": csrfToken
@@ -173,15 +153,16 @@ export default function ModifierChatroom(){
                 alert("Error code : " + response.status + " - Reason : Forbidden");
                 window.location.href = properties.LoginApi;
             }
-            setUsersInvited(usersInvited);
+            setUsersInvited(usersInvited.content);
+            setUsersInvitedTotalPages(usersInvited.totalPages);
         }catch (error){
             console.log(error);
         }
     }
 
-    const getUsersNotInvited = async () => {
+    const getUsersNotInvited = async (page) => {
         try{
-            const response = await fetch(properties.ChatroomApi + chatroomId + "/users/non-invited", {
+            const response = await fetch(properties.ChatroomApi + chatroomId + "/users/non-invited?page=" + page, {
                 "credentials": "include",
                 "headers": {
                     "X-XSRF-TOKEN": csrfToken
@@ -195,11 +176,41 @@ export default function ModifierChatroom(){
                 alert("Error code : " + response.status + " - Reason : Forbidden");
                 window.location.href = properties.LoginApi;
             }
-            setUsersNotInvited(usersNotInvited);
+            setUsersNotInvited(usersNotInvited.content);
+            setUsersNotInvitedTotalPages(usersNotInvited.totalPages);
         }catch (error) {
             console.log(error);
         }
     }
+
+    useEffect(() => {
+        const getChatroom = async () => {
+            try{
+                const response = await fetch(properties.ChatroomApi + chatroomId, {
+                    "credentials": "include",
+                    "headers": {
+                        "X-XSRF-TOKEN": csrfToken
+                    }
+                });
+                const chatroom = await response.json();
+                if(response.status === 401){
+                    alert("Error code : " + response.status + " - Reason : Not logged in");
+                    window.location.href = properties.LoginApi;
+                }else if(response.status === 404){
+                    alert("Chatroom introuvable");
+                    window.location.href = properties.LoginApi;
+                }
+                setChatroom(chatroom);
+            }
+            catch(error){
+                console.log(error);
+            }
+        }
+        getChatroom()
+    },[chatroomId, csrfToken]);
+
+    useEffect(() => {getUsersInvited(usersInvitedPage)},[csrfToken,usersInvitedPage]);
+    useEffect(() => {getUsersNotInvited(usersNotInvitedPage)},[csrfToken,usersNotInvitedPage]);
 
     const handleModifier = (event) => {
         event.preventDefault();
@@ -260,6 +271,12 @@ export default function ModifierChatroom(){
                                 </ListGroup.Item>
                             ))}
                         </ListGroup>
+                        <Pagination
+                            currentPage={usersInvitedPage}
+                            totalPages={usersInvitedTotalPages}
+                            handlePrevious={() => setUsersInvitedPage(usersInvitedPage - 1)}
+                            handleNext={() => setUsersInvitedPage(usersInvitedPage + 1)}
+                        />
                         </Accordion.Body>
                     </Accordion.Item>
                 </Accordion>
@@ -275,6 +292,12 @@ export default function ModifierChatroom(){
                                 </ListGroup.Item>
                             ))}
                         </ListGroup>
+                        <Pagination
+                            currentPage={usersNotInvitedPage}
+                            totalPages={usersNotInvitedTotalPages}
+                            handlePrevious={() => setUsersNotInvitedPage(usersNotInvitedPage - 1)}
+                            handleNext={() => setUsersNotInvitedPage(usersNotInvitedPage + 1)}
+                        />
                         </Accordion.Body>
                     </Accordion.Item>
                 </Accordion>

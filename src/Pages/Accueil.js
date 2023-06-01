@@ -2,23 +2,26 @@ import React, {useContext, useEffect, useState} from "react";
 import properties from "../properties.json";
 import LoginContext from "../LoginContext";
 import {Link} from "react-router-dom";
-import {Table} from "react-bootstrap";
+import {Button, Col, Container, Row, Table} from "react-bootstrap";
 import CsrfTokenContext from "../CsrfTokenContext";
+import Pagination from "../Components/Pagination";
 
 export default function Accueil(){
     const loggedUser = useContext(LoginContext);
     const csrfToken = useContext(CsrfTokenContext);
 
     const [chatroomsOwned, setChatroomsOwned] = useState([]);
+    const [chatroomsOwnedPage, setChatroomsOwnedPage] = useState(0);
+    const [chatroomsOwnedTotalPages, setChatroomsOwnedTotalPages] = useState(0);
+
     const [chatroomsJoined, setChatroomsJoined] = useState([]);
+    const [chatroomsJoinedPage, setChatroomsjoinedPage] = useState(0);
+    const [chatroomsjoinedTotalPages, setChatroomsjoinedTotalPages] = useState(0);
 
     useEffect(() => {
-        if (!loggedUser || !csrfToken) {
-            return;
-        }
-        const getChatroomsOwned = async () => {
+        const getChatroomsOwned = async (page) => {
             try{
-                const response = await fetch(properties.getChatroomsByUserApi + loggedUser.id + "/chatrooms/owned",{
+                const response = await fetch(properties.getChatroomsByUserApi + loggedUser.id + "/chatrooms/owned?page=" + page,{
                     "credentials": "include",
                     "headers": {
                         "X-XSRF-TOKEN": csrfToken
@@ -28,15 +31,20 @@ export default function Accueil(){
                 if(response.status === 401){
                     window.location.href = properties.LoginApi;
                 }
-                setChatroomsOwned(chatroomsOwned);
+                setChatroomsOwned(chatroomsOwned.content);
+                setChatroomsOwnedTotalPages(chatroomsOwned.totalPages);
             }
             catch(error){
                 console.log(error);
             }
         }
-        const getChatroomsJoined = async () => {
+        getChatroomsOwned(chatroomsOwnedPage);
+    }, [csrfToken, loggedUser, chatroomsOwnedPage])
+
+    useEffect(() => {
+        const getChatroomsJoined = async (page) => {
             try{
-                const response = await fetch(properties.getChatroomsByUserApi + loggedUser.id + "/chatrooms/joined",{
+                const response = await fetch(properties.getChatroomsByUserApi + loggedUser.id + "/chatrooms/joined?page=" + page,{
                     "credentials": "include",
                     "headers": {
                         "X-XSRF-TOKEN": csrfToken
@@ -46,16 +54,15 @@ export default function Accueil(){
                 if(response.status === 401){
                     window.location.href = properties.LoginApi;
                 }
-                setChatroomsJoined(chatroomsJoined);
+                setChatroomsJoined(chatroomsJoined.content);
+                setChatroomsjoinedTotalPages(chatroomsJoined.totalPages);
             }
             catch(error){
                 console.log(error);
             }
         }
-        getChatroomsOwned();
-        getChatroomsJoined();
-    }, [csrfToken, loggedUser])
-
+        getChatroomsJoined(chatroomsJoinedPage);
+    }, [csrfToken, loggedUser, chatroomsJoinedPage])
 
     return(
         <main style={{backgroundColor: 'white',border: '2px solid #ccc', padding: '10px',boxShadow: '0 4px 6px #39373D'}}>
@@ -67,7 +74,8 @@ export default function Accueil(){
                 </div>
                 <div>S'il ya des chatrooms que vous avez planifié n'ont pas etre affiché, c'est possible que ils ont deja expiré.</div>
                 {chatroomsOwned.length > 0 ? (
-                    <Table bordered hover variant="dark">
+                    <>
+                        <Table bordered hover variant="dark">
                         <thead>
                         <tr>
                             <th>Chatroom Id</th>
@@ -86,7 +94,14 @@ export default function Accueil(){
                             )
                         )}
                         </tbody>
-                    </Table>
+                        </Table>
+                        <Pagination
+                            currentPage={chatroomsOwnedPage}
+                            totalPages={chatroomsOwnedTotalPages}
+                            handlePrevious={() => setChatroomsOwnedPage(chatroomsOwnedPage - 1)}
+                            handleNext={() => setChatroomsOwnedPage(chatroomsOwnedPage + 1)}
+                        />
+                    </>
                     )
                     :(<div>Vous n'avez pas de chatrooms !</div>)
                 }
@@ -98,7 +113,8 @@ export default function Accueil(){
                 </div>
                 <div>S'il ya des chatrooms que vous avez rejoint n'ont pas etre affiché, c'est possible que ils ont deja expiré.</div>
                 {chatroomsJoined.length > 0 ? (
-                <Table bordered hover variant="dark">
+                <>
+                    <Table bordered hover variant="dark">
                     <thead>
                     <tr>
                         <th>Chatroom Id</th>
@@ -117,7 +133,14 @@ export default function Accueil(){
                         )
                     )}
                     </tbody>
-                </Table>
+                    </Table>
+                    <Pagination
+                        currentPage={chatroomsJoinedPage}
+                        totalPages={chatroomsjoinedTotalPages}
+                        handlePrevious={() => setChatroomsjoinedPage(chatroomsJoinedPage - 1)}
+                        handleNext={() => setChatroomsjoinedPage(chatroomsJoinedPage + 1)}
+                    />
+                </>
                     )
                     :(<div>Vous n'avez rejoint aucun chatrooms !</div>)
                 }

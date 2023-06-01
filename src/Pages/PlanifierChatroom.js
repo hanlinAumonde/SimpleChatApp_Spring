@@ -5,6 +5,7 @@ import Form from 'react-bootstrap/Form';
 import CsrfTokenContext from "../CsrfTokenContext";
 import Accordion from "react-bootstrap/Accordion";
 import {Badge} from "react-bootstrap";
+import Pagination from "../Components/Pagination";
 
 export default function PlanifierChatroom(){
     const csrfToken = useContext(CsrfTokenContext);
@@ -12,6 +13,9 @@ export default function PlanifierChatroom(){
     const [titre, setTitre] = useState("");
     const [description, setDescription] = useState("");
     const [users, setUsers] = useState([]);
+    const [usersPage, setUsersPage] = useState(0);
+    const [usersTotalPages, setUsersTotalPages] = useState(0);
+
     const [usersInvited, setUsersInvited] = useState([]);
     const [startDate, setStartDate] = useState("");
     const [duration, setDuration] = useState(1);
@@ -105,9 +109,9 @@ export default function PlanifierChatroom(){
     }
 
     useEffect(() => {
-        const getUsers = async () => {
+        const getUsers = async (page) => {
             try {
-                const response = await fetch(properties.getAllOtherUsersApi,{
+                const response = await fetch(properties.getAllOtherUsersApi+"?page=" + page,{
                     credentials: 'include',
                     headers: {
                         "X-XSRF-TOKEN": csrfToken
@@ -118,13 +122,14 @@ export default function PlanifierChatroom(){
                     alert("Error code :" + response.status + " - Reason : " + response.statusText);
                     window.location.href = properties.LoginApi;
                 }
-                setUsers(users);
+                setUsers(users.content);
+                setUsersTotalPages(users.totalPages);
             } catch (error) {
                 console.log(error);
             }
         }
-        getUsers();
-    }, [csrfToken]);
+        getUsers(usersPage);
+    }, [csrfToken,usersPage]);
 
     return (
         <Form onSubmit={handleSubmit} style={{backgroundColor: 'white',border: '2px solid #ccc', padding: '10px',boxShadow: '0 4px 6px #39373D'}}>
@@ -160,6 +165,12 @@ export default function PlanifierChatroom(){
                             />
                         )
                     )}
+                    <Pagination
+                        currentPage={usersPage}
+                        totalPages={usersTotalPages}
+                        handlePrevious={() => setUsersPage(usersPage - 1)}
+                        handleNext={() => setUsersPage(usersPage + 1)}
+                    />
                     </Accordion.Body>
                 </Accordion.Item></Accordion>
             </Form.Group>

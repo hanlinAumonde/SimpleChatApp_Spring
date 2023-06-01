@@ -39,7 +39,6 @@ export default function Chatroom(){
         const checkRes = inputMsgCheck(message);
         if (webSocketClient.current !== null && checkRes){
             webSocketClient.current.send(JSON.stringify(message));
-            setMsgSend("");
         }else if(!checkRes){
             setMsgSend("");
         }else{
@@ -175,7 +174,7 @@ export default function Chatroom(){
                     <span><CloseButton onClick={() => window.location.href = "/"}/></span>
                     </div>
                 </h2>
-                <Container className={styles.container}>
+                <Container className={styles.container} fluid>
                     <Row style={{height:'100%'}}>
                         <Col xs={9} style={{height:'100%'}}>
                             <ScrollBox className={styles.scrollBox} messages={msgList}/>
@@ -189,7 +188,7 @@ export default function Chatroom(){
                                     userInChatroom =>
                                         userInChatroom.isConnecting === 1?
                                         <ListGroup.Item>
-                                            <p>{userInChatroom.firstName + "" + userInChatroom.lastName}</p>
+                                            <p>{userInChatroom.firstName + " " + userInChatroom.lastName}</p>
                                             <p>{userInChatroom.mail}</p>
                                         </ListGroup.Item>
                                             : null
@@ -210,21 +209,23 @@ export default function Chatroom(){
                         </Col>
                     </Row>
                 </Container>
-                <Form onSubmit={handleSendMessage} className={styles.form}>
-                    <Form.Group className="mb-3" controlId="formBasicMessageSend">
-                        <Container>
-                            <Row>
-                            <Col xs={11}>
-                                <Form.Control type="text" value={MsgSend} onChange={(event) => setMsgSend(event.target.value)} />
-                                <Form.Text className="text-muted">
-                                    Ne pas envoyer les caractères spéciaux
-                                </Form.Text>
-                            </Col>
-                            <Col xs={1}><Button variant="primary" type="submit">Send</Button></Col>
-                            </Row>
-                        </Container>
-                    </Form.Group>
-                </Form>
+                <Container fluid>
+                    <Form onSubmit={handleSendMessage} className={styles.form}>
+                        <Form.Group className="mb-3" controlId="formBasicMessageSend">
+                            <Container>
+                                <Row>
+                                <Col xs={11}>
+                                    <Form.Control type="text" value={MsgSend} onChange={(event) => setMsgSend(event.target.value)} />
+                                    <Form.Text className="text-muted">
+                                        Ne pas envoyer les caractères spéciaux
+                                    </Form.Text>
+                                </Col>
+                                <Col xs={1}><Button variant="primary" type="submit">Send</Button></Col>
+                                </Row>
+                            </Container>
+                        </Form.Group>
+                    </Form>
+                </Container>
             </main>
         );
 }
