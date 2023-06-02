@@ -2,7 +2,7 @@ import React, {useContext, useEffect, useState} from "react";
 import properties from "../properties.json";
 import LoginContext from "../LoginContext";
 import {Link} from "react-router-dom";
-import {Button, Col, Container, Row, Table} from "react-bootstrap";
+import {Table} from "react-bootstrap";
 import CsrfTokenContext from "../CsrfTokenContext";
 import Pagination from "../Components/Pagination";
 
@@ -10,6 +10,7 @@ export default function Accueil(){
     const loggedUser = useContext(LoginContext);
     const csrfToken = useContext(CsrfTokenContext);
 
+    //les variables pour les chatrooms owned/joined et leurs pages
     const [chatroomsOwned, setChatroomsOwned] = useState([]);
     const [chatroomsOwnedPage, setChatroomsOwnedPage] = useState(0);
     const [chatroomsOwnedTotalPages, setChatroomsOwnedTotalPages] = useState(0);
@@ -18,6 +19,9 @@ export default function Accueil(){
     const [chatroomsJoinedPage, setChatroomsjoinedPage] = useState(0);
     const [chatroomsjoinedTotalPages, setChatroomsjoinedTotalPages] = useState(0);
 
+    /**
+     * Fonction qui permet de récupérer les chatrooms owned par l'utilisateur connecté
+     */
     useEffect(() => {
         const getChatroomsOwned = async (page) => {
             try{
@@ -41,6 +45,9 @@ export default function Accueil(){
         getChatroomsOwned(chatroomsOwnedPage);
     }, [csrfToken, loggedUser, chatroomsOwnedPage])
 
+    /**
+     * Fonction qui permet de récupérer les chatrooms joined par l'utilisateur connecté
+     */
     useEffect(() => {
         const getChatroomsJoined = async (page) => {
             try{
@@ -67,7 +74,7 @@ export default function Accueil(){
     return(
         <main style={{backgroundColor: 'white',border: '2px solid #ccc', padding: '10px',boxShadow: '0 4px 6px #39373D'}}>
             <h1>Welcome {loggedUser.firstName} !</h1>
-            <section>
+            <section style={{border:"2px solid #ccc",padding:"10px",boxShadow:"0 4px 6px rgba(0, 0, 0, 0.1)"}}>
                 <h2>Voici votre Chatrooms :</h2>
                 <div>
                     Vous pouvez voir vos Chatrooms dans <Link to="/listeChatroom_Owned">Chatrooms Owned</Link> et faire les operations.
@@ -106,7 +113,8 @@ export default function Accueil(){
                     :(<div>Vous n'avez pas de chatrooms !</div>)
                 }
             </section>
-            <section>
+            <div style={{height:"10px"}}></div>
+            <section style={{border:"2px solid #ccc",padding:"10px",boxShadow:"0 4px 6px rgba(0, 0, 0, 0.1)"}}>
                 <h2>Voici les Chatrooms que vous avez rejoint :</h2>
                 <div>
                     Vous pouvez voir les Chatrooms que vous avez rejoint dans <Link to="/listeChatroom_Joined">Chatrooms Joined</Link> et faire les operations.
@@ -142,7 +150,8 @@ export default function Accueil(){
                     />
                 </>
                     )
-                    :(<div>Vous n'avez rejoint aucun chatrooms !</div>)
+                    :
+                    (<div>Vous n'avez rejoint aucun chatrooms !</div>)
                 }
             </section>
         </main>

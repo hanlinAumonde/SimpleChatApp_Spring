@@ -21,8 +21,9 @@ function App() {
     const [user, setUser] = useState({});
     const csrfTk = useRef(null);
 
-
-
+    /**
+     * Cette fct est utilisée pour déconnecter l'utilisateur
+     */
     const logout = async () => {
         await fetch(properties.LogoutApi, {
             method: 'POST',
@@ -39,6 +40,9 @@ function App() {
             .catch(error => console.log(error));
     }
 
+    /**
+    * Cette fct est utilisée pour récupérer l'utilisateur connecté et le token CSRF, puis le stocker dans les contextes correspondants
+    */
     useEffect(() => {
         const getLoggedUser = () => {
             fetch(properties.LoggedUserApi,{
@@ -46,6 +50,7 @@ function App() {
             })
                 .then(response => {
                     if(response.status === 401){
+                        //si l'utilisateur n'est pas connecté, on le redirige vers la page de login
                         console.log("return to login");
                         window.location.href = properties.LoginApi;
                     }else{
@@ -60,6 +65,7 @@ function App() {
                 .catch(error => console.log(error));
         }
         getLoggedUser();
+        //on crée un timer pour récupérer l'utilisateur connecté toutes les 15 minutes
         const timer = setInterval(getLoggedUser, 1000*60*15);
         return () => clearInterval(timer);
     }, [])

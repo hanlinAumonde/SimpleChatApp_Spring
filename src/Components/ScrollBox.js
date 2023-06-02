@@ -2,6 +2,9 @@ import React from "react";
 import {Alert, Card} from "react-bootstrap";
 import styles from "../Styles/Chatroom.module.css";
 
+/**
+ * Composant de scrollbox dans la chatroom pour affichier les messages
+ */
 export default function ScrollBox({ messages }) {
     return (
         <div style={{ height: '100%', overflowY: 'auto' }}>

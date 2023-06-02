@@ -1,6 +1,9 @@
 import React from "react";
 import styles from "../Styles/footer.module.css"
 
+/**
+ * Composant de footer dans la page
+ */
 export default function Footer(){
     return (
         <>

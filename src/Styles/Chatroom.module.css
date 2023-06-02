@@ -4,6 +4,7 @@
     border: 2px solid #ccc;
     padding: 10px;
     box-shadow: 0 4px 6px #39373D;
+    overflow: auto;
 }
 
 .h2{
@@ -20,14 +21,15 @@
 .main .container{
     margin: 5px;
     height: 100%;
-    min-height: 55vh;
-    max-height: 55vh;
+    min-height: 53vh;
+    max-height: 53vh;
+    padding: 5px;
 }
 
 .form{
     height: 100%;
-    min-height: 10vh;
-    max-height: 10vh;
+    min-height: 8vh;
+    max-height: 8vh;
     width: 100%;
 }
 
@@ -36,7 +38,6 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column-reverse;
-    border: 2px;
 }
 
 .listGroup{

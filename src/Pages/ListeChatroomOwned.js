@@ -1,19 +1,24 @@
 import React, {useContext, useEffect, useState} from "react";
 import properties from "../properties.json";
-import {DropdownButton, Table, Dropdown, Row, Col, Button, Container} from "react-bootstrap";
+import {DropdownButton, Table, Dropdown} from "react-bootstrap";
 import CsrfTokenContext from "../CsrfTokenContext";
 import {Link} from "react-router-dom";
 import LoginContext from "../LoginContext";
 import Pagination from "../Components/Pagination";
 
 export default function ListeChatroomOwned(){
+    //le contexte pour le csrfToken et l'utilisateur connecté
     const csrfToken = useContext(CsrfTokenContext);
     const loggedUser = useContext(LoginContext);
 
+    //les variables pour les chatrooms owned/joined et leurs pages
     const [chatroomsOwned, setChatroomsOwned] = useState([]);
     const [chatroomsOwnedPage, setChatroomsOwnedPage] = useState(0);
     const [chatroomsOwnedTotalPages, setChatroomsOwnedTotalPages] = useState(0);
 
+    /**
+     * Fonction qui permet d'effectuer la récupération des chatrooms owned par l'utilisateur connecté
+     */
     useEffect(() => {
         const getChatroomsOwned = async (page) => {
             try{
@@ -38,7 +43,10 @@ export default function ListeChatroomOwned(){
         getChatroomsOwned(chatroomsOwnedPage);
     },[csrfToken, loggedUser, chatroomsOwnedPage]);
 
-    const handleDelete = (chatroomId) => {
+    /**
+     * Fonction qui permet de supprimer une chatroom
+     */
+    const DeleteChatroom = (chatroomId) => {
         fetch(properties.ChatroomApi + chatroomId, {
             "method": "DELETE",
             "credentials": "include",
@@ -59,10 +67,13 @@ export default function ListeChatroomOwned(){
             .catch(error => {console.log(error)});
     }
 
+    /**
+     * Fonction qui permet de gérer l'évènement de click sur le bouton delete
+     */
     const handleClick = (chatroomId) => {
         return async (event) => {
             event.preventDefault();
-            handleDelete(chatroomId);
+            DeleteChatroom(chatroomId);
         }
     }
 

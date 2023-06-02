@@ -1,6 +1,9 @@
 import React from "react";
 import styles from "../Styles/header.module.css"
 
+/**
+ * Composant de header dans la page
+ */
 export default function Header(){
     return(
         <>

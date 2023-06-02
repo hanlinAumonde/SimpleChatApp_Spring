@@ -1,19 +1,24 @@
 import React, {useContext, useEffect, useState} from "react";
 import properties from "../properties.json";
-import {Button, Col, Container, Dropdown, DropdownButton, Row, Table} from "react-bootstrap";
+import {Dropdown, DropdownButton, Table} from "react-bootstrap";
 import CsrfTokenContext from "../CsrfTokenContext";
 import LoginContext from "../LoginContext";
 import {Link} from "react-router-dom";
 import Pagination from "../Components/Pagination";
 
 export default function ListeChatroomJoined(){
+    //le contexte pour le csrfToken et l'utilisateur connecté
     const csrfToken = useContext(CsrfTokenContext);
     const loggedUser = useContext(LoginContext);
 
+    //les variables pour les chatrooms joined et leurs pages
     const [chatroomsJoined, setChatroomsJoined] = useState([]);
     const [chatroomsJoinedPage, setChatroomsJoinedPage] = useState(0);
     const [chatroomsJoinedTotalPages, setChatroomsJoinedTotalPages] = useState(0);
 
+    /**
+     * Fonction qui permet d'eefectur la récupération des chatrooms joined par l'utilisateur connecté
+     */
     useEffect(() => {
         const getChatroomsJoined = async (page) => {
             try{
@@ -28,7 +33,9 @@ export default function ListeChatroomJoined(){
                     alert("Error code :" + response.status + " - Reason : " + response.statusText);
                     window.location.href = properties.LoginApi;
                 }
+                setChatroomsJoinedTotalPages(chatroomsJoined.totalPages);
 
+                //Pour chaque chatroom, on récupère le propriétaire et le status
                 const promises = chatroomsJoined.content.map(async (chatroom) => {
                     const ownerResponse = await fetch(properties.ChatroomApi + chatroom.id + "/users/owner", {
                         "credentials": "include",
@@ -54,7 +61,6 @@ export default function ListeChatroomJoined(){
                 chatroomsJoined = await Promise.all(promises);
 
                 setChatroomsJoined(chatroomsJoined);
-                setChatroomsJoinedTotalPages(chatroomsJoined.totalPages);
             }
             catch(error){
                 console.log(error);
@@ -63,7 +69,9 @@ export default function ListeChatroomJoined(){
         getChatroomsJoined(chatroomsJoinedPage);
     },[csrfToken, loggedUser, chatroomsJoinedPage]);
 
-
+    /**
+     * Fonction qui permet de quitter une chatroom
+     */
     const handleQuitter = (chatroomId,userId) => {
         fetch(properties.ChatroomApi + chatroomId + "/users/invited/" + userId, {
             "method": "DELETE",
@@ -86,6 +94,9 @@ export default function ListeChatroomJoined(){
             });
     }
 
+    /**
+     * Fonction qui permet de gérer l'événement de click sur le bouton 'Quitter'
+     */
     const handleClick_Quitter = (chatroomId,userId) => {
         return async (event) => {
             event.preventDefault();

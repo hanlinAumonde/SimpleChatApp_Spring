@@ -9,11 +9,13 @@ import styles from "../Styles/Chatroom.module.css";
 import {useParams,useLocation} from "react-router-dom";
 
 export default function Chatroom(){
+    //le contexte pour le csrfToken et l'utilisateur connecté
     const loggedUser = useContext(LoginContext);
     const csrfToken = useContext(CsrfTokenContext);
+
     const webSocketClient = useRef(null);
-    let { chatroomId } = useParams();
-    const currentPath = useLocation();
+    let { chatroomId } = useParams(); //récupérer l'id de la chatroom dans l'url
+    const currentPath = useLocation(); //récupérer la route actuelle
 
     const [allUsersInChatroom, setAllUsersInChatroom] = useState([]);
     const [msgList, setMsgList] = useState([]);
@@ -22,6 +24,9 @@ export default function Chatroom(){
     //messageType = 0 c'est à dire que le message est un message texte normal, messageType = 1/2 c'est à dire que le message est un message de connexion/déconnexion
     const [MsgSend, setMsgSend] = useState("");
 
+    /**
+     * Cette fonction est utilisée pour vérifier si le message est vide ou contient des caractères spéciaux
+     */
     const inputMsgCheck = (message) => {
         if(message === ""){
             alert("Le message ne doit pas être vide!");
@@ -35,6 +40,9 @@ export default function Chatroom(){
         return true;
     }
 
+    /**
+     * Cette fonction est utilisée pour envoyer le message au serveur
+     */
     const sendMsgToServer = (message) => {
         const checkRes = inputMsgCheck(message);
         if (webSocketClient.current !== null && checkRes){
@@ -46,11 +54,18 @@ export default function Chatroom(){
             window.location.reload();
         }
     }
+
+    /**
+     * Cette fonction est utilisée pour traiter l'événement de click sur le bouton "Send"
+     */
     const handleSendMessage = (event) => {
         event.preventDefault();
         sendMsgToServer(MsgSend);
     }
 
+    /**
+     * Cette fonction est utilisée pour récupérer tous les utilisateurs dans la chatroom
+     */
     useEffect(() => {
         const getAllUsersInChatroom = async () => {
             try{
@@ -87,22 +102,28 @@ export default function Chatroom(){
             }
         }
         getAllUsersInChatroom();
+        //on crée un timer pour récupérer tous les utilisateurs dans la chatroom toutes les 5 minutes
         const timer = setInterval(getAllUsersInChatroom,1000*60*5);
         return () => clearInterval(timer);
     },[chatroomId, csrfToken, loggedUser]);
 
+    /**
+     * Cette fonction est utilisée pour traiter l'événement de fermer la page
+     */
     useEffect(() => {
         const handleBeforeUnload = () => {
             if(webSocketClient.current !== null)
                 webSocketClient.current.close();
         }
-
         window.addEventListener("beforeunload", handleBeforeUnload);
         return () => {
             window.removeEventListener("beforeunload", handleBeforeUnload);
         }
     });
 
+    /**
+     * Cette fonction est utilisée pour traiter les logiques de WebSocket
+     */
     useEffect(() => {
         const initWebSocket = () => {
             if(webSocketClient.current === null && allUsersInChatroom.length !== 0){
@@ -115,12 +136,13 @@ export default function Chatroom(){
                 webSocketClient.current.onclose = () => {
                     console.log("WebSocket Client a été déconnecté");
                     //retourner à la page de acceuil du user:
-                    window.location.href = properties.LoginApi;
+                    if(currentPath.pathname === "/chatroom/" + chatroomId)
+                        window.location.href = properties.LoginApi;
                 }
 
                 webSocketClient.current.onmessage = (event) => {
                     let message = JSON.parse(event.data);
-
+                    //mise à jour le status de connexion pour chaque utilisateur à la fois que le message de connexion/déconnexion est reçu
                     if(message.messageType === 1) {
                         const newUsers = allUsersInChatroom.map(user =>
                             user.id === message.user.id ? {...user, isConnecting: 1} : user
@@ -132,8 +154,7 @@ export default function Chatroom(){
                         );
                         setAllUsersInChatroom(newUsers);
                     }
-
-
+                    //ajouter un champ "sender" pour chaque message
                     if(message.user.id === loggedUser.id){
                         message = {...message, sender : 1};
                     } else{
@@ -147,15 +168,13 @@ export default function Chatroom(){
                     window.location.reload();
                 }
             }
-            /*
-            else{
-                alert("Vous êtes déjà connecté à la Chatroom, vous pouvez rafraichir la page pour la réinitialiser");
-            }
-            */
         }
         initWebSocket();
-    },[chatroomId, loggedUser, allUsersInChatroom]);
+    },[chatroomId, loggedUser, allUsersInChatroom, currentPath]);
 
+    /**
+     * Cette fonction est utilisée pour traiter l'événement de changer la route de page (différent que la fermeture de page)
+     */
     useEffect(() => {
         return () => {
             if(webSocketClient.current !== null)
@@ -209,7 +228,7 @@ export default function Chatroom(){
                         </Col>
                     </Row>
                 </Container>
-                <Container fluid>
+                    <div style={{height:"8px"}}/>
                     <Form onSubmit={handleSendMessage} className={styles.form}>
                         <Form.Group className="mb-3" controlId="formBasicMessageSend">
                             <Container>
@@ -225,7 +244,7 @@ export default function Chatroom(){
                             </Container>
                         </Form.Group>
                     </Form>
-                </Container>
+
             </main>
         );
 }

@@ -8,8 +8,10 @@ import {Badge} from "react-bootstrap";
 import Pagination from "../Components/Pagination";
 
 export default function PlanifierChatroom(){
+    //le contexte du token csrf
     const csrfToken = useContext(CsrfTokenContext);
 
+    //les variables pour les informations de la chatroom
     const [titre, setTitre] = useState("");
     const [description, setDescription] = useState("");
     const [users, setUsers] = useState([]);
@@ -20,8 +22,12 @@ export default function PlanifierChatroom(){
     const [startDate, setStartDate] = useState("");
     const [duration, setDuration] = useState(1);
 
+    //le message de résultat de l'ajout de chatroom
     const [resultMsg, setResultMsg] = useState("");
 
+    /**
+     * Fonction qui permet de check les inputs
+     */
     const inputCheck = (titre,description,duration,startDate,usersInvited) => {
         //le contenu de titre et description ne doit pas contenir des caractères spéciaux : < > / \ { } [ ] ( ) = + * ? ! @ # $ % ^ & | ~ ` ;
         const regex = /[<>/\\{}[\]()=+*?!@#$%^&|~`;]/;
@@ -50,14 +56,9 @@ export default function PlanifierChatroom(){
         return "check passed";
     }
 
-    const refreshState = () => {
-        setTitre("");
-        setDescription("");
-        setUsersInvited([]);
-        setStartDate("");
-        setDuration(1);
-    }
-
+    /**
+     * Fonction qui permet d'ajouter une chatroom
+     */
     const addChatroom = async (titre,description,duration,startDate,usersInvited) => {
         try {
             let inputCheckResult = inputCheck(titre,description,duration,startDate,usersInvited);
@@ -87,7 +88,7 @@ export default function PlanifierChatroom(){
                     setResultMsg("chatroom already exist");
                 } else {
                     setResultMsg("chatroom added");
-                    refreshState();
+                    window.location.reload();
                 }
             }
         } catch (error) {
@@ -95,6 +96,9 @@ export default function PlanifierChatroom(){
         }
     };
 
+    /**
+     * Fonction qui permet de traiter le click sur les checkbox
+     */
     const handleUserCheckboxChange = (event, user) => {
         if (event.target.checked) {
             setUsersInvited(prevUsers => [...prevUsers, user]);
@@ -103,11 +107,17 @@ export default function PlanifierChatroom(){
         }
     };
 
+    /**
+     * Fonction qui permet de traiter le click sur les boutons de Submit
+     */
     const handleSubmit = (event) => {
         event.preventDefault();
         addChatroom(titre,description,duration,startDate,usersInvited);
     }
 
+    /**
+     * Fonction qui permet d'effectuer la récupération des utilisateurs
+     */
     useEffect(() => {
         const getUsers = async (page) => {
             try {
@@ -134,12 +144,6 @@ export default function PlanifierChatroom(){
     return (
         <Form onSubmit={handleSubmit} style={{backgroundColor: 'white',border: '2px solid #ccc', padding: '10px',boxShadow: '0 4px 6px #39373D'}}>
             <h1>Planifier votre chatroom :</h1>
-            {resultMsg ?
-                <div>
-                    {resultMsg === "chatroom added" ? <Badge bg="success">{resultMsg}</Badge> : <Badge bg="danger">{resultMsg}</Badge>}
-                </div>
-                : null
-            }
             <Form.Group className="mb-3" controlId="formBasicTitre">
                 <Form.Label>Titre de la chatroom :</Form.Label>
                 <Form.Control type="titre" placeholder="Entrer le titre du Chatroom"
@@ -189,6 +193,12 @@ export default function PlanifierChatroom(){
                     value={duration} onChange={(event) => setDuration(parseInt(event.target.value))} />
                 <Form.Text className="text-muted">Entre 1 -30 jours</Form.Text>
             </Form.Group>
+            {resultMsg ?
+                <div>
+                    {resultMsg === "chatroom added" ? <Badge bg="success">{resultMsg}</Badge> : <Badge bg="danger">{resultMsg}</Badge>}
+                </div>
+                : null
+            }
             <Button variant="primary" type="submit">Submit</Button>
         </Form>
     );

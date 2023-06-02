@@ -5,6 +5,11 @@ import Button from 'react-bootstrap/Button';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { Link } from 'react-router-dom';
 
+/**
+ * Composant de navigation dans la page
+ * Le 1er partie est pour afficher les informations de l'utilisateur connecté
+ * Le 2ème partie est pour afficher les liens vers les différentes pages
+ */
 export default function Navigation({logout}) {
     const loggedUser = useContext(LoginContext);
 
@@ -15,7 +20,7 @@ export default function Navigation({logout}) {
                     <Accordion.Header>User - Info</Accordion.Header>
                     <Accordion.Body>
                         <ListGroup variant="flush">
-                            <ListGroup.Item>Email Address : {loggedUser && loggedUser.mail}</ListGroup.Item>
+                            <ListGroup.Item style={{wordWrap:"break-word"}}>Email Address : {loggedUser && loggedUser.mail}</ListGroup.Item>
                             <ListGroup.Item>FirstName : {loggedUser && loggedUser.firstName}</ListGroup.Item>
                             <ListGroup.Item>LastName : {loggedUser && loggedUser.lastName}</ListGroup.Item>
                         </ListGroup>

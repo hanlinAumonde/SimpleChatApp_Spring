@@ -6,20 +6,21 @@ import {Form} from "react-bootstrap";
 import Accordion from "react-bootstrap/Accordion";
 import ListGroup from "react-bootstrap/ListGroup";
 import Button from "react-bootstrap/Button";
-import Container from "react-bootstrap/Container";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
 import Pagination from "../Components/Pagination";
 
 export default function ModifierChatroom(){
+    //les contextes pour l'utilisateur connecté et le csrfToken
     const csrfToken = useContext(CsrfTokenContext);
     let { chatroomId } = useParams();
 
+    //les données reçues sont de format ChatroomDTO, qui seulement contient 'titre','description','id'
     const [chatroom, setChatroom] = useState({});
     const [updatedChatroom, setUpdatedChatroom] = useState({
         "startDate": "",
         "duration": 1
-    });
+    }); //les données à envoyer sont de format ChatroomRequestDTO, qui contient également 'startDate','duration', donc on initialise ces deux variables
+
+    //les variables pour les utilisateurs invités et non invités et leurs pages
     const [usersInvited, setUsersInvited] = useState([]);
     const [usersInvitedPage, setUsersInvitedPage] = useState(0);
     const [usersInvitedTotalPages, setUsersInvitedTotalPages] = useState(0);
@@ -28,6 +29,9 @@ export default function ModifierChatroom(){
     const [usersNotInvitedPage, setUsersNotInvitedPage] = useState(0);
     const [usersNotInvitedTotalPages, setUsersNotInvitedTotalPages] = useState(0);
 
+    /**
+     * Fonction qui permet de checker si les données sont valides
+     */
     const modInputCheck = () => {
         const regex = /[<>/\\{}[\]()=+*?!@#$%^&|~`;]/;
         const dateStringFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/;
@@ -52,6 +56,9 @@ export default function ModifierChatroom(){
         return "check passed";
     }
 
+    /**
+     * Fonction qui permet d'inviter un utilisateur
+     */
     const inviteUser = async (user) => {
         try{
             const response = await fetch(properties.ChatroomApi + chatroomId + "/users/invited/", {
@@ -79,6 +86,9 @@ export default function ModifierChatroom(){
         }
     }
 
+    /**
+     * Fonction qui permet de récupérer les utilisateurs invités
+     */
     const uninviteUser = async (userId) => {
         try{
             const response = await fetch(properties.ChatroomApi + chatroomId + "/users/invited/" + userId, {
@@ -101,6 +111,9 @@ export default function ModifierChatroom(){
         }
     }
 
+    /**
+     * Fonction qui permet de mettre à jour les données de la chatroom
+     */
     const updateChatroom = async () => {
         try{
             const check = modInputCheck();
@@ -137,6 +150,9 @@ export default function ModifierChatroom(){
         }
     }
 
+    /**
+     * Fonction qui permet de récupérer les utilisateurs déjà invités
+     */
     const getUsersInvited = async (page) => {
         try{
             const response = await fetch(properties.ChatroomApi + chatroomId + "/users/invited?page=" + page, {
@@ -160,6 +176,9 @@ export default function ModifierChatroom(){
         }
     }
 
+    /**
+     * Fonction qui permet de récupérer les utilisateurs non invités
+     */
     const getUsersNotInvited = async (page) => {
         try{
             const response = await fetch(properties.ChatroomApi + chatroomId + "/users/non-invited?page=" + page, {
@@ -183,6 +202,9 @@ export default function ModifierChatroom(){
         }
     }
 
+    /**
+     * Fonction qui permet d'effectuer la réception des informations de la chatroom pour le modifier
+     */
     useEffect(() => {
         const getChatroom = async () => {
             try{
@@ -209,14 +231,23 @@ export default function ModifierChatroom(){
         getChatroom()
     },[chatroomId, csrfToken]);
 
+    /**
+     * Fonction qui permet d'effectuer la réception des utilisateurs déjà invités et non invités
+     */
     useEffect(() => {getUsersInvited(usersInvitedPage)},[csrfToken,usersInvitedPage]);
     useEffect(() => {getUsersNotInvited(usersNotInvitedPage)},[csrfToken,usersNotInvitedPage]);
 
+    /**
+     * Fonction qui permet de traiter l'évènement de modification de la chatroom
+     */
     const handleModifier = (event) => {
         event.preventDefault();
         updateChatroom();
     }
 
+    /**
+     * Fonction qui permet de traiter l'évènement d'inviter un utilisateur
+     */
     const handleInvite = (user) => {
         return async (event) => {
             event.preventDefault();
@@ -224,6 +255,9 @@ export default function ModifierChatroom(){
         }
     }
 
+    /**
+     * Fonction qui permet de traiter l'évènement de désinviter un utilisateur
+     */
     const handleUninvite = (userID) => {
         return async (event) => {
             event.preventDefault();
