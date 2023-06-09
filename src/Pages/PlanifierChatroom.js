@@ -88,7 +88,10 @@ export default function PlanifierChatroom(){
                     setResultMsg("chatroom already exist");
                 } else {
                     setResultMsg("chatroom added");
-                    window.location.reload();
+                    setTitre("");
+                    setDescription("");
+                    setStartDate("");
+                    setDuration(1);
                 }
             }
         } catch (error) {

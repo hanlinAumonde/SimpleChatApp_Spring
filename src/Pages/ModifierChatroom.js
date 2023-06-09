@@ -79,8 +79,11 @@ export default function ModifierChatroom(){
                 alert("Error code : " + response.status + " - Reason : Not logged in");
                 window.location.href = properties.LoginApi;
             }
+            /*
             await getUsersInvited();
             await getUsersNotInvited();
+            */
+            window.location.reload();
         }catch (error) {
             console.log(error);
         }
@@ -104,8 +107,11 @@ export default function ModifierChatroom(){
             }else if (response.status === 409){
                 alert("Erreur lors de la suppression de l'utilisateur");
             }
+            /*
             await getUsersInvited();
             await getUsersNotInvited();
+            */
+            window.location.reload();
         }catch (error) {
             console.log(error);
         }
@@ -140,6 +146,7 @@ export default function ModifierChatroom(){
                     window.location.href = properties.LoginApi;
                 } else if (response.status === 409) {
                     alert("Erreur lors de la modification de la chatroom");
+                    window.location.href = properties.LoginApi;
                 } else {
                     alert("Chatroom modifiée avec succès");
                 }
@@ -251,7 +258,7 @@ export default function ModifierChatroom(){
     const handleInvite = (user) => {
         return async (event) => {
             event.preventDefault();
-            await inviteUser(user.id);
+            await inviteUser(user);
         }
     }
 
