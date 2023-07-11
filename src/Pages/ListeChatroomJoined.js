@@ -16,63 +16,65 @@ export default function ListeChatroomJoined(){
     const [chatroomsJoinedPage, setChatroomsJoinedPage] = useState(0);
     const [chatroomsJoinedTotalPages, setChatroomsJoinedTotalPages] = useState(0);
 
-    /**
-     * Fonction qui permet d'eefectur la récupération des chatrooms joined par l'utilisateur connecté
-     */
-    useEffect(() => {
-        const getChatroomsJoined = async (page) => {
-            try{
-                const response = await fetch(properties.getChatroomsByUserApi + loggedUser.id + "/chatrooms/joined?page=" + page,{
+    const getChatroomsJoined = async (page) => {
+        try{
+            const response = await fetch(properties.getChatroomsByUserApi + loggedUser.id + "/chatrooms/joined?page=" + page,{
+                "credentials": "include",
+                "headers": {
+                    "X-XSRF-TOKEN": csrfToken
+                }
+            });
+            let chatroomsJoined = await response.json();
+            if(response.status === 401){
+                alert("Error code :" + response.status + " - Reason : " + response.statusText);
+                window.location.href = properties.LoginApi;
+            }
+            setChatroomsJoinedPage(chatroomsJoined.number);
+            setChatroomsJoinedTotalPages(chatroomsJoined.totalPages);
+
+            //Pour chaque chatroom, on récupère le propriétaire et le status
+            const promises = chatroomsJoined.content.map(async (chatroom) => {
+                const ownerResponse = await fetch(properties.ChatroomApi + chatroom.id + "/users/owner", {
                     "credentials": "include",
                     "headers": {
                         "X-XSRF-TOKEN": csrfToken
                     }
                 });
-                let chatroomsJoined = await response.json();
-                if(response.status === 401){
-                    alert("Error code :" + response.status + " - Reason : " + response.statusText);
+                const statusResponse = await fetch(properties.ChatroomApi + chatroom.id + "/status", {
+                    "credentials": "include",
+                    "headers": {
+                        "X-XSRF-TOKEN": csrfToken
+                    }
+                });
+                if (ownerResponse.status === 401 || statusResponse.status === 401) {
+                    alert("Error code :" + ownerResponse.status + " - Reason : Not authorized");
                     window.location.href = properties.LoginApi;
                 }
-                setChatroomsJoinedTotalPages(chatroomsJoined.totalPages);
+                const owner = await ownerResponse.json();
+                const status = await statusResponse.json();
+                return { ...chatroom, owner , chatroomStatus : status};
+            });
 
-                //Pour chaque chatroom, on récupère le propriétaire et le status
-                const promises = chatroomsJoined.content.map(async (chatroom) => {
-                    const ownerResponse = await fetch(properties.ChatroomApi + chatroom.id + "/users/owner", {
-                        "credentials": "include",
-                        "headers": {
-                            "X-XSRF-TOKEN": csrfToken
-                        }
-                    });
-                    const statusResponse = await fetch(properties.ChatroomApi + chatroom.id + "/status", {
-                        "credentials": "include",
-                        "headers": {
-                            "X-XSRF-TOKEN": csrfToken
-                        }
-                    });
-                    if (ownerResponse.status === 401 || statusResponse.status === 401) {
-                        alert("Error code :" + ownerResponse.status + " - Reason : Not authorized");
-                        window.location.href = properties.LoginApi;
-                    }
-                    const owner = await ownerResponse.json();
-                    const status = await statusResponse.json();
-                    return { ...chatroom, owner , chatroomStatus : status};
-                });
+            chatroomsJoined = await Promise.all(promises);
 
-                chatroomsJoined = await Promise.all(promises);
-
-                setChatroomsJoined(chatroomsJoined);
-            }
-            catch(error){
-                console.log(error);
-            }
+            setChatroomsJoined(chatroomsJoined);
         }
+        catch(error){
+            console.log(error);
+        }
+    }
+
+    /**
+     * Fonction qui permet d'eefectur la récupération des chatrooms joined par l'utilisateur connecté
+     */
+    useEffect(() => {
         getChatroomsJoined(chatroomsJoinedPage);
     },[csrfToken, loggedUser, chatroomsJoinedPage]);
 
     /**
      * Fonction qui permet de quitter une chatroom
      */
-    const handleQuitter = (chatroomId,userId) => {
+    const handleQuitter = (chatroomId,userId,page) => {
         fetch(properties.ChatroomApi + chatroomId + "/users/invited/" + userId, {
             "method": "DELETE",
             "credentials": "include",
@@ -87,8 +89,9 @@ export default function ListeChatroomJoined(){
                 } else if (response.status === 409) {
                     alert("Erreur lors de quitter la Chatroom");
                 }
-                window.location.reload();
+                //window.location.reload();
             })
+            .then(() => getChatroomsJoined(page))
             .catch(error => {
                 console.log(error)
             });
@@ -97,10 +100,10 @@ export default function ListeChatroomJoined(){
     /**
      * Fonction qui permet de gérer l'événement de click sur le bouton 'Quitter'
      */
-    const handleClick_Quitter = (chatroomId,userId) => {
+    const handleClick_Quitter = (chatroomId,userId,page) => {
         return async (event) => {
             event.preventDefault();
-            handleQuitter(chatroomId,userId);
+            handleQuitter(chatroomId,userId,page);
         }
     }
 
@@ -120,7 +123,7 @@ export default function ListeChatroomJoined(){
                     </tr>
                     </thead>
                     <tbody>
-                    {chatroomsJoined.map((chatroom) => (
+                    {chatroomsJoined.map((chatroom,index,array) => (
                         <tr key={chatroom.id}>
                             <td>{chatroom.id}</td>
                             <td>{chatroom.titre}</td>
@@ -128,13 +131,21 @@ export default function ListeChatroomJoined(){
                             <td>{chatroom.owner? chatroom.owner.firstName + " " + chatroom.owner.lastName : "Loading .."}</td>
                             <td>
                                 <DropdownButton id="dropdown-basic-button" title="Navigate">
-                                    <Dropdown.Item onClick={handleClick_Quitter(chatroom.id,loggedUser.id)}>
-                                        Quitter le chatroom
-                                    </Dropdown.Item>
+                                    {array.length > 1 && index > 0 ?
+                                        <Dropdown.Item onClick={handleClick_Quitter(chatroom.id,loggedUser.id,chatroomsJoinedPage-1)}>
+                                            Quitter le chatroom
+                                        </Dropdown.Item>
+                                        :
+                                        <Dropdown.Item onClick={handleClick_Quitter(chatroom.id,loggedUser.id,chatroomsJoinedPage)}>
+                                            Quitter le chatroom
+                                        </Dropdown.Item>
+                                    }
                                     <Dropdown.Divider />
-                                    <Dropdown.Item disabled={chatroom.chatroomStatus? !chatroom.chatroomStatus : true}>
-                                        <Link to={`/Chatroom/${chatroom.id}`}>Entrer le chatroom</Link>
+                                    <Link to={`/Chatroom/${chatroom.id}`} style={{ textDecoration: 'none' }}>
+                                    <Dropdown.Item as="span" disabled={chatroom.chatroomStatus? !chatroom.chatroomStatus : true}>
+                                        Entrer le chatroom
                                     </Dropdown.Item>
+                                    </Link>
                                 </DropdownButton>
                             </td>
                         </tr>

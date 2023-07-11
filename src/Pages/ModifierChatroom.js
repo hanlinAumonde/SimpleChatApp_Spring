@@ -59,7 +59,7 @@ export default function ModifierChatroom(){
     /**
      * Fonction qui permet d'inviter un utilisateur
      */
-    const inviteUser = async (user) => {
+    const inviteUser = async (user,page) => {
         try{
             const response = await fetch(properties.ChatroomApi + chatroomId + "/users/invited/", {
                 "credentials": "include",
@@ -79,11 +79,11 @@ export default function ModifierChatroom(){
                 alert("Error code : " + response.status + " - Reason : Not logged in");
                 window.location.href = properties.LoginApi;
             }
-            /*
-            await getUsersInvited();
-            await getUsersNotInvited();
-            */
-            window.location.reload();
+
+            await getUsersInvited(page);
+            await getUsersNotInvited(page);
+
+            //window.location.reload();
         }catch (error) {
             console.log(error);
         }
@@ -92,7 +92,7 @@ export default function ModifierChatroom(){
     /**
      * Fonction qui permet de récupérer les utilisateurs invités
      */
-    const uninviteUser = async (userId) => {
+    const uninviteUser = async (userId,page) => {
         try{
             const response = await fetch(properties.ChatroomApi + chatroomId + "/users/invited/" + userId, {
                 "credentials": "include",
@@ -107,11 +107,11 @@ export default function ModifierChatroom(){
             }else if (response.status === 409){
                 alert("Erreur lors de la suppression de l'utilisateur");
             }
-            /*
-            await getUsersInvited();
-            await getUsersNotInvited();
-            */
-            window.location.reload();
+
+            await getUsersInvited(page);
+            await getUsersNotInvited(page);
+
+            //window.location.reload();
         }catch (error) {
             console.log(error);
         }
@@ -177,6 +177,7 @@ export default function ModifierChatroom(){
                 window.location.href = properties.LoginApi;
             }
             setUsersInvited(usersInvited.content);
+            setUsersInvitedPage(usersInvited.number);
             setUsersInvitedTotalPages(usersInvited.totalPages);
         }catch (error){
             console.log(error);
@@ -203,6 +204,7 @@ export default function ModifierChatroom(){
                 window.location.href = properties.LoginApi;
             }
             setUsersNotInvited(usersNotInvited.content);
+            setUsersNotInvitedPage(usersNotInvited.number);
             setUsersNotInvitedTotalPages(usersNotInvited.totalPages);
         }catch (error) {
             console.log(error);
@@ -255,20 +257,20 @@ export default function ModifierChatroom(){
     /**
      * Fonction qui permet de traiter l'évènement d'inviter un utilisateur
      */
-    const handleInvite = (user) => {
+    const handleInvite = (user,page) => {
         return async (event) => {
             event.preventDefault();
-            await inviteUser(user);
+            await inviteUser(user,page);
         }
     }
 
     /**
      * Fonction qui permet de traiter l'évènement de désinviter un utilisateur
      */
-    const handleUninvite = (userID) => {
+    const handleUninvite = (userID,page) => {
         return async (event) => {
             event.preventDefault();
-            await uninviteUser(userID);
+            await uninviteUser(userID,page);
         }
     }
 
@@ -281,7 +283,7 @@ export default function ModifierChatroom(){
                         <Accordion.Item eventKey="0">
                             <Accordion.Header>Titre :</Accordion.Header>
                             <Accordion.Body>
-                            <Form.Label>Titre :</Form.Label>
+                            <Form.Label >Titre :</Form.Label>
                             <Form.Control type="text" placeholder={chatroom.titre}
                                   value={chatroom.titre} onChange={(event) => setChatroom({...chatroom, titre: event.target.value})}/>
                             </Accordion.Body>
@@ -305,19 +307,27 @@ export default function ModifierChatroom(){
                     <Accordion.Header>Utilisateurs invités :</Accordion.Header>
                         <Accordion.Body>
                         <ListGroup>
-                            {usersInvited.map((user) => (
+                            {usersInvited.map((user,index,array) => (
                                 <ListGroup.Item key={user.id}>
                                     <div>{user.firstName + " " + user.lastName}</div>
-                                    <Button variant="danger" onClick={handleUninvite(user.id)}>Supprimer</Button>
+                                    {array.length === 1 && usersNotInvitedPage > 0?
+                                        <Button variant="danger" onClick={handleUninvite(user.id,usersNotInvitedPage-1)}>Supprimer</Button>
+                                        :
+                                        <Button variant="danger" onClick={handleUninvite(user.id,usersNotInvitedPage)}>Supprimer</Button>
+                                    }
                                 </ListGroup.Item>
                             ))}
                         </ListGroup>
-                        <Pagination
-                            currentPage={usersInvitedPage}
-                            totalPages={usersInvitedTotalPages}
-                            handlePrevious={() => setUsersInvitedPage(usersInvitedPage - 1)}
-                            handleNext={() => setUsersInvitedPage(usersInvitedPage + 1)}
-                        />
+                            {usersInvitedTotalPages !== 0?
+                            <Pagination
+                                currentPage={usersInvitedPage}
+                                totalPages={usersInvitedTotalPages}
+                                handlePrevious={() => setUsersInvitedPage(usersInvitedPage - 1)}
+                                handleNext={() => setUsersInvitedPage(usersInvitedPage + 1)}
+                            />
+                                :
+                                <div>Il n'y a pas d'utilisateurs invités</div>
+                            }
                         </Accordion.Body>
                     </Accordion.Item>
                 </Accordion>
@@ -326,19 +336,27 @@ export default function ModifierChatroom(){
                     <Accordion.Header>Utilisateurs non invités :</Accordion.Header>
                         <Accordion.Body>
                         <ListGroup>
-                            {usersNotInvited.map((user) => (
+                            {usersNotInvited.map((user,index,array) => (
                                 <ListGroup.Item key={user.id}>
                                     <div>{user.firstName + " " + user.lastName}</div>
-                                    <Button variant="success" onClick={handleInvite(user)}>Ajouter</Button>
+                                    {array.length === 1 && usersInvitedPage > 0?
+                                        <Button variant="success" onClick={handleInvite(user,usersInvitedPage-1)}>Ajouter</Button>
+                                        :
+                                        <Button variant="success" onClick={handleInvite(user,usersInvitedPage)}>Ajouter</Button>
+                                    }
                                 </ListGroup.Item>
                             ))}
                         </ListGroup>
-                        <Pagination
-                            currentPage={usersNotInvitedPage}
-                            totalPages={usersNotInvitedTotalPages}
-                            handlePrevious={() => setUsersNotInvitedPage(usersNotInvitedPage - 1)}
-                            handleNext={() => setUsersNotInvitedPage(usersNotInvitedPage + 1)}
-                        />
+                            {usersNotInvitedTotalPages !== 0?
+                            <Pagination
+                                currentPage={usersNotInvitedPage}
+                                totalPages={usersNotInvitedTotalPages}
+                                handlePrevious={() => setUsersNotInvitedPage(usersNotInvitedPage - 1)}
+                                handleNext={() => setUsersNotInvitedPage(usersNotInvitedPage + 1)}
+                            />
+                                :
+                                <div>Il n'y a pas d'utilisateurs non invités</div>
+                            }
                         </Accordion.Body>
                     </Accordion.Item>
                 </Accordion>

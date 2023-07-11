@@ -90,6 +90,7 @@ export default function PlanifierChatroom(){
                     setResultMsg("chatroom added");
                     setTitre("");
                     setDescription("");
+                    setUsersInvited([]);
                     setStartDate("");
                     setDuration(1);
                 }
@@ -108,6 +109,7 @@ export default function PlanifierChatroom(){
         } else {
             setUsersInvited(prevUsers => prevUsers.filter(u => u.id !== user.id));
         }
+        console.log(usersInvited);
     };
 
     /**
@@ -168,6 +170,7 @@ export default function PlanifierChatroom(){
                                 type="checkbox"
                                 label={user.firstName + " " + user.lastName}
                                 key={user.id}
+                                checked={usersInvited.some(u => u.id === user.id)}
                                 onChange={event => handleUserCheckboxChange(event, user)}
                             />
                         )

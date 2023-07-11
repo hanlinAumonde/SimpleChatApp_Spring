@@ -17,7 +17,7 @@ export default function Pagination({currentPage, totalPages, handlePrevious, han
                     }
                 </Col>
                 <Col md="auto">
-                    <span style={{fontStyle:"oblique",fontSize:"20px"}}>Page number {currentPage + 1} of {totalPages} pages</span>
+                    <span style={{fontStyle:"oblique",fontSize:"20px"}}>Numéro de page {currentPage + 1} / {totalPages} pages</span>
                 </Col>
                 <Col xs lg='2'>
                     {

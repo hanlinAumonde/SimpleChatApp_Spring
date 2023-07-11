@@ -16,37 +16,39 @@ export default function ListeChatroomOwned(){
     const [chatroomsOwnedPage, setChatroomsOwnedPage] = useState(0);
     const [chatroomsOwnedTotalPages, setChatroomsOwnedTotalPages] = useState(0);
 
+    const getChatroomsOwned = async (page) => {
+        try{
+            const response = await fetch(properties.getChatroomsByUserApi + loggedUser.id + "/chatrooms/owned?page=" + page,{
+                "credentials": "include",
+                "headers": {
+                    "X-XSRF-TOKEN": csrfToken
+                }
+            });
+            const chatroomsOwned = await response.json();
+            if(response.status === 401){
+                alert("Error code :" + response.status + " - Reason : " + response.statusText);
+                window.location.href = properties.LoginApi;
+            }
+            setChatroomsOwned(chatroomsOwned.content);
+            setChatroomsOwnedPage(chatroomsOwned.number)
+            setChatroomsOwnedTotalPages(chatroomsOwned.totalPages);
+        }
+        catch(error){
+            console.log(error);
+        }
+    }
+
     /**
      * Fonction qui permet d'effectuer la récupération des chatrooms owned par l'utilisateur connecté
      */
     useEffect(() => {
-        const getChatroomsOwned = async (page) => {
-            try{
-                const response = await fetch(properties.getChatroomsByUserApi + loggedUser.id + "/chatrooms/owned?page=" + page,{
-                    "credentials": "include",
-                    "headers": {
-                        "X-XSRF-TOKEN": csrfToken
-                    }
-                });
-                const chatroomsOwned = await response.json();
-                if(response.status === 401){
-                    alert("Error code :" + response.status + " - Reason : " + response.statusText);
-                    window.location.href = properties.LoginApi;
-                }
-                setChatroomsOwned(chatroomsOwned.content);
-                setChatroomsOwnedTotalPages(chatroomsOwned.totalPages);
-            }
-            catch(error){
-                console.log(error);
-            }
-        }
         getChatroomsOwned(chatroomsOwnedPage);
     },[csrfToken, loggedUser, chatroomsOwnedPage]);
 
     /**
      * Fonction qui permet de supprimer une chatroom
      */
-    const DeleteChatroom = (chatroomId) => {
+    const DeleteChatroom = (chatroomId,page) => {
         fetch(properties.ChatroomApi + chatroomId, {
             "method": "DELETE",
             "credentials": "include",
@@ -62,18 +64,19 @@ export default function ListeChatroomOwned(){
                 else if(response.status === 409){
                     alert("Erreur lors de la suppression de la Chatroom");
                 }
-                window.location.reload();
+                //window.location.reload();
             })
+            .then(()=>getChatroomsOwned(page))
             .catch(error => {console.log(error)});
     }
 
     /**
      * Fonction qui permet de gérer l'évènement de click sur le bouton delete
      */
-    const handleClick = (chatroomId) => {
+    const handleClick = (chatroomId,page) => {
         return async (event) => {
             event.preventDefault();
-            DeleteChatroom(chatroomId);
+            DeleteChatroom(chatroomId,page);
         }
     }
 
@@ -93,23 +96,33 @@ export default function ListeChatroomOwned(){
                         </thead>
                         <tbody>
                             {chatroomsOwned.map(
-                                chatroom => (
+                                (chatroom,index,array) => (
                                     <tr key={chatroom.id}>
                                         <td>{chatroom.id}</td>
                                         <td>{chatroom.titre}</td>
                                         <td>{chatroom.description}</td>
                                         <td>
                                             <DropdownButton id="dropdown-basic-button" title="Navigate">
-                                                <Dropdown.Item>
-                                                    <Link to={`/ModifierChatroom/${chatroom.id}`}>Modifier</Link>
+                                                <Link to={`/ModifierChatroom/${chatroom.id}`} style={{ textDecoration: 'none' }}>
+                                                <Dropdown.Item as="span">
+                                                    Modifier
                                                 </Dropdown.Item>
-                                                <Dropdown.Item onClick={handleClick(chatroom.id)}>
-                                                    Delete
-                                                </Dropdown.Item>
+                                                </Link>
+                                                {array.length === 1 && chatroomsOwnedPage > 0 ?
+                                                    <Dropdown.Item onClick={handleClick(chatroom.id,chatroomsOwnedPage-1)}>
+                                                        Delete
+                                                    </Dropdown.Item>
+                                                    :
+                                                    <Dropdown.Item onClick={handleClick(chatroom.id,chatroomsOwnedPage)}>
+                                                        Delete
+                                                    </Dropdown.Item>
+                                                }
                                                 <Dropdown.Divider />
-                                                <Dropdown.Item>
-                                                    <Link to={`/Chatroom/${chatroom.id}`}>Entrer le chatroom</Link>
+                                                <Link to={`/Chatroom/${chatroom.id}`} style={{ textDecoration: 'none' }}>
+                                                <Dropdown.Item as="span">
+                                                    Entrer le chatroom
                                                 </Dropdown.Item>
+                                                </Link>
                                             </DropdownButton>
                                         </td>
                                     </tr>

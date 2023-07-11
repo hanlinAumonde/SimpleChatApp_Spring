@@ -16,6 +16,7 @@ import ListeChatroomOwned from "./Pages/ListeChatroomOwned";
 import ListeChatroomJoined from "./Pages/ListeChatroomJoined";
 import ModifierChatroom from "./Pages/ModifierChatroom";
 import Chatroom from "./Pages/Chatroom";
+import Page404 from "./Pages/Page404";
 
 function App() {
     const [user, setUser] = useState({});
@@ -88,7 +89,7 @@ function App() {
                             <Route path="/listeChatroom_Joined" element={<ListeChatroomJoined/>} />
                             <Route path="/ModifierChatroom/:chatroomId" element={<ModifierChatroom/>} />
                             <Route path="/Chatroom/:chatroomId" element={<Chatroom/>} />
-                            <Route path="*" element={<h1>404 Not Found</h1>} />
+                            <Route path="*" element={<Page404/>} />
                         </Routes>
                     </Col>
                 </Row> </Container> </Router>
