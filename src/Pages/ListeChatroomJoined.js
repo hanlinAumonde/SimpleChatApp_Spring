@@ -1,18 +1,18 @@
-import React, {useContext, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import properties from "../properties.json";
 import {Dropdown, DropdownButton, Table} from "react-bootstrap";
-import CsrfTokenContext from "../CsrfTokenContext";
-import LoginContext from "../LoginContext";
 import {Link} from "react-router-dom";
 import Pagination from "../Components/Pagination";
 import {useSelector} from 'react-redux';
 import { selectCsrfToken } from "../Components/reduxComponents/csrfReducer";
+import { selectUser } from "../Components/reduxComponents/loggedUserReducer";
 
 export default function ListeChatroomJoined(){
     //le contexte pour le csrfToken et l'utilisateur connecté
     //const csrfToken = useContext(CsrfTokenContext);
     const csrfToken = useSelector(selectCsrfToken);
-    const loggedUser = useContext(LoginContext);
+    //const loggedUser = useContext(LoginContext);
+    const loggedUser = useSelector(selectUser);
 
     //les variables pour les chatrooms joined et leurs pages
     const [chatroomsJoined, setChatroomsJoined] = useState([]);

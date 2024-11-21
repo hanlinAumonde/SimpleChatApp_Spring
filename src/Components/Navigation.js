@@ -1,18 +1,25 @@
-import React, { useContext } from 'react';
-import LoginContext from "../LoginContext";
+import React from 'react';
 import Accordion from 'react-bootstrap/Accordion';
 import Button from 'react-bootstrap/Button';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { Link } from 'react-router-dom';
 import styles from '../Styles/Navigation.module.css';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectUser, logoutUser } from './reduxComponents/loggedUserReducer';
 
 /**
  * Composant de navigation dans la page
  * Le 1er partie est pour afficher les informations de l'utilisateur connecté
  * Le 2ème partie est pour afficher les liens vers les différentes pages
  */
-export default function Navigation({logout}) {
-    const loggedUser = useContext(LoginContext);
+export default function Navigation() {
+    //const loggedUser = useContext(LoginContext);
+    const loggedUser = useSelector(selectUser);
+    const dispatch = useDispatch();
+
+    const handleLogout = () => {
+        dispatch(logoutUser());
+    };
 
     return (
         <nav>
@@ -21,11 +28,11 @@ export default function Navigation({logout}) {
                     <Accordion.Header>User - Info</Accordion.Header>
                     <Accordion.Body>
                         <ListGroup variant="flush">
-                            <ListGroup.Item style={{wordWrap:"break-word"}}>Email Address : {loggedUser && loggedUser.mail}</ListGroup.Item>
-                            <ListGroup.Item>FirstName : {loggedUser && loggedUser.firstName}</ListGroup.Item>
-                            <ListGroup.Item>LastName : {loggedUser && loggedUser.lastName}</ListGroup.Item>
+                            <ListGroup.Item style={{wordWrap:"break-word"}}>Email Address : {loggedUser?.mail}</ListGroup.Item>
+                            <ListGroup.Item>FirstName : {loggedUser?.firstName}</ListGroup.Item>
+                            <ListGroup.Item>LastName : {loggedUser?.lastName}</ListGroup.Item>
                         </ListGroup>
-                        <Button variant="outline-danger" onClick={logout}>Déconnexion</Button>
+                        <Button variant="outline-danger" onClick={handleLogout}>Déconnexion</Button>
                     </Accordion.Body>
                 </Accordion.Item>
                 <Accordion.Item eventKey="1">

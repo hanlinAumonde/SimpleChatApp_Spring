@@ -1,8 +1,7 @@
-import React, {useContext, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import properties from "../properties.json";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import CsrfTokenContext from "../CsrfTokenContext";
 import Accordion from "react-bootstrap/Accordion";
 import {Badge} from "react-bootstrap";
 import Pagination from "../Components/Pagination";
@@ -147,7 +146,7 @@ export default function PlanifierChatroom(){
             }
         }
         getUsers(usersPage);
-    }, [usersPage]);
+    }, [csrfToken,usersPage]);
 
     return (
         <Form onSubmit={handleSubmit} style={{backgroundColor: 'white',border: '2px solid #ccc', padding: '10px',boxShadow: '0 4px 6px #39373D'}}>

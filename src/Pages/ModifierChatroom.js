@@ -1,6 +1,5 @@
-import React, {useContext, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import properties from "../properties.json";
-import CsrfTokenContext from "../CsrfTokenContext";
 import {useParams} from "react-router-dom";
 import {Form} from "react-bootstrap";
 import Accordion from "react-bootstrap/Accordion";
@@ -241,7 +240,7 @@ export default function ModifierChatroom(){
             }
         }
         getChatroom()
-    },[chatroomId]);
+    },[csrfToken,chatroomId]);
 
     /**
      * Fonction qui permet d'effectuer la réception des utilisateurs déjà invités et non invités
