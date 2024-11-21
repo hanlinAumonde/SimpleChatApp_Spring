@@ -7,10 +7,13 @@ import Accordion from "react-bootstrap/Accordion";
 import ListGroup from "react-bootstrap/ListGroup";
 import Button from "react-bootstrap/Button";
 import Pagination from "../Components/Pagination";
+import {useSelector} from 'react-redux';
+import { selectCsrfToken } from "../Components/reduxComponents/csrfReducer";
 
 export default function ModifierChatroom(){
     //les contextes pour l'utilisateur connecté et le csrfToken
-    const csrfToken = useContext(CsrfTokenContext);
+    //const csrfToken = useContext(CsrfTokenContext);
+    const csrfToken = useSelector(selectCsrfToken);
     let { chatroomId } = useParams();
 
     //les données reçues sont de format ChatroomDTO, qui seulement contient 'titre','description','id'
@@ -238,7 +241,7 @@ export default function ModifierChatroom(){
             }
         }
         getChatroom()
-    },[chatroomId, csrfToken]);
+    },[chatroomId]);
 
     /**
      * Fonction qui permet d'effectuer la réception des utilisateurs déjà invités et non invités

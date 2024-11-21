@@ -6,10 +6,13 @@ import CsrfTokenContext from "../CsrfTokenContext";
 import Accordion from "react-bootstrap/Accordion";
 import {Badge} from "react-bootstrap";
 import Pagination from "../Components/Pagination";
+import {useSelector} from 'react-redux';
+import { selectCsrfToken } from "../Components/reduxComponents/csrfReducer";
 
 export default function PlanifierChatroom(){
     //le contexte du token csrf
-    const csrfToken = useContext(CsrfTokenContext);
+    //const csrfToken = useContext(CsrfTokenContext);
+    const csrfToken = useSelector(selectCsrfToken);
 
     //les variables pour les informations de la chatroom
     const [titre, setTitre] = useState("");
@@ -144,7 +147,7 @@ export default function PlanifierChatroom(){
             }
         }
         getUsers(usersPage);
-    }, [csrfToken,usersPage]);
+    }, [usersPage]);
 
     return (
         <Form onSubmit={handleSubmit} style={{backgroundColor: 'white',border: '2px solid #ccc', padding: '10px',boxShadow: '0 4px 6px #39373D'}}>

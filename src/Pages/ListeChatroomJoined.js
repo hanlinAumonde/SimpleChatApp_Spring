@@ -5,10 +5,13 @@ import CsrfTokenContext from "../CsrfTokenContext";
 import LoginContext from "../LoginContext";
 import {Link} from "react-router-dom";
 import Pagination from "../Components/Pagination";
+import {useSelector} from 'react-redux';
+import { selectCsrfToken } from "../Components/reduxComponents/csrfReducer";
 
 export default function ListeChatroomJoined(){
     //le contexte pour le csrfToken et l'utilisateur connecté
-    const csrfToken = useContext(CsrfTokenContext);
+    //const csrfToken = useContext(CsrfTokenContext);
+    const csrfToken = useSelector(selectCsrfToken);
     const loggedUser = useContext(LoginContext);
 
     //les variables pour les chatrooms joined et leurs pages
@@ -18,6 +21,9 @@ export default function ListeChatroomJoined(){
 
     const getChatroomsJoined = async (page) => {
         try{
+            if (!loggedUser?.id || !csrfToken) {
+                return;  // 如果没有用户信息或token，直接返回
+            }
             const response = await fetch(properties.getChatroomsByUserApi + loggedUser.id + "/chatrooms/joined?page=" + page,{
                 "credentials": "include",
                 "headers": {
@@ -29,8 +35,8 @@ export default function ListeChatroomJoined(){
                 alert("Error code :" + response.status + " - Reason : " + response.statusText);
                 window.location.href = properties.LoginApi;
             }
-            setChatroomsJoinedPage(chatroomsJoined.number);
-            setChatroomsJoinedTotalPages(chatroomsJoined.totalPages);
+            setChatroomsJoinedPage(chatroomsJoined.number || 0);
+            setChatroomsJoinedTotalPages(chatroomsJoined.totalPages || 0);
 
             //Pour chaque chatroom, on récupère le propriétaire et le status
             const promises = chatroomsJoined.content.map(async (chatroom) => {
@@ -57,7 +63,7 @@ export default function ListeChatroomJoined(){
 
             chatroomsJoined = await Promise.all(promises);
 
-            setChatroomsJoined(chatroomsJoined);
+            setChatroomsJoined(chatroomsJoined || []);
         }
         catch(error){
             console.log(error);
@@ -69,7 +75,7 @@ export default function ListeChatroomJoined(){
      */
     useEffect(() => {
         getChatroomsJoined(chatroomsJoinedPage);
-    },[csrfToken, loggedUser, chatroomsJoinedPage]);
+    },[csrfToken,loggedUser, chatroomsJoinedPage]);
 
     /**
      * Fonction qui permet de quitter une chatroom

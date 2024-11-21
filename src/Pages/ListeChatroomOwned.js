@@ -5,10 +5,13 @@ import CsrfTokenContext from "../CsrfTokenContext";
 import {Link} from "react-router-dom";
 import LoginContext from "../LoginContext";
 import Pagination from "../Components/Pagination";
+import {useSelector} from 'react-redux';
+import { selectCsrfToken } from "../Components/reduxComponents/csrfReducer";
 
 export default function ListeChatroomOwned(){
     //le contexte pour le csrfToken et l'utilisateur connecté
-    const csrfToken = useContext(CsrfTokenContext);
+    //const csrfToken = useContext(CsrfTokenContext);
+    const csrfToken = useSelector(selectCsrfToken);
     const loggedUser = useContext(LoginContext);
 
     //les variables pour les chatrooms owned/joined et leurs pages
@@ -18,6 +21,9 @@ export default function ListeChatroomOwned(){
 
     const getChatroomsOwned = async (page) => {
         try{
+            if (!loggedUser?.id || !csrfToken) {
+                return;  // 如果没有用户信息或token，直接返回
+            }
             const response = await fetch(properties.getChatroomsByUserApi + loggedUser.id + "/chatrooms/owned?page=" + page,{
                 "credentials": "include",
                 "headers": {
@@ -29,9 +35,9 @@ export default function ListeChatroomOwned(){
                 alert("Error code :" + response.status + " - Reason : " + response.statusText);
                 window.location.href = properties.LoginApi;
             }
-            setChatroomsOwned(chatroomsOwned.content);
-            setChatroomsOwnedPage(chatroomsOwned.number)
-            setChatroomsOwnedTotalPages(chatroomsOwned.totalPages);
+            setChatroomsOwned(chatroomsOwned.content || []);
+            setChatroomsOwnedPage(chatroomsOwned.number || 0)
+            setChatroomsOwnedTotalPages(chatroomsOwned.totalPages || 0);
         }
         catch(error){
             console.log(error);
@@ -43,7 +49,7 @@ export default function ListeChatroomOwned(){
      */
     useEffect(() => {
         getChatroomsOwned(chatroomsOwnedPage);
-    },[csrfToken, loggedUser, chatroomsOwnedPage]);
+    },[csrfToken,loggedUser, chatroomsOwnedPage]);
 
     /**
      * Fonction qui permet de supprimer une chatroom

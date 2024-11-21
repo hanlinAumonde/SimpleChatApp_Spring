@@ -3,12 +3,15 @@ import properties from "../properties.json";
 import LoginContext from "../LoginContext";
 import {Link} from "react-router-dom";
 import {Table} from "react-bootstrap";
-import CsrfTokenContext from "../CsrfTokenContext";
+//import CsrfTokenContext from "../CsrfTokenContext";
 import Pagination from "../Components/Pagination";
+import {useSelector} from 'react-redux';
+import { selectCsrfToken } from "../Components/reduxComponents/csrfReducer";
 
 export default function Accueil(){
     const loggedUser = useContext(LoginContext);
-    const csrfToken = useContext(CsrfTokenContext);
+    //const csrfToken = useContext(CsrfTokenContext);
+    const csrfToken = useSelector(selectCsrfToken);
 
     //les variables pour les chatrooms owned/joined et leurs pages
     const [chatroomsOwned, setChatroomsOwned] = useState([]);
@@ -25,6 +28,9 @@ export default function Accueil(){
     useEffect(() => {
         const getChatroomsOwned = async (page) => {
             try{
+                if (!loggedUser?.id || !csrfToken) {
+                    return;  // 如果没有用户信息或token，直接返回
+                }
                 const response = await fetch(properties.getChatroomsByUserApi + loggedUser.id + "/chatrooms/owned?page=" + page,{
                     "credentials": "include",
                     "headers": {
@@ -35,15 +41,17 @@ export default function Accueil(){
                 if(response.status === 401){
                     window.location.href = properties.LoginApi;
                 }
-                setChatroomsOwned(chatroomsOwned.content);
-                setChatroomsOwnedTotalPages(chatroomsOwned.totalPages);
+                setChatroomsOwned(chatroomsOwned.content || []);
+                setChatroomsOwnedTotalPages(chatroomsOwned.totalPages || 0);
             }
             catch(error){
                 console.log(error);
+                setChatroomsOwned([]);  // 错误时设置空数组
+                setChatroomsOwnedTotalPages(0);
             }
         }
-        getChatroomsOwned(chatroomsOwnedPage);
-    }, [csrfToken, loggedUser, chatroomsOwnedPage])
+        if(csrfToken) getChatroomsOwned(chatroomsOwnedPage);
+    }, [csrfToken,loggedUser, chatroomsOwnedPage])
 
     /**
      * Fonction qui permet de récupérer les chatrooms joined par l'utilisateur connecté
@@ -51,6 +59,9 @@ export default function Accueil(){
     useEffect(() => {
         const getChatroomsJoined = async (page) => {
             try{
+                if (!loggedUser?.id || !csrfToken) {
+                    return;  // 如果没有用户信息或token，直接返回
+                }
                 const response = await fetch(properties.getChatroomsByUserApi + loggedUser.id + "/chatrooms/joined?page=" + page,{
                     "credentials": "include",
                     "headers": {
@@ -61,15 +72,17 @@ export default function Accueil(){
                 if(response.status === 401){
                     window.location.href = properties.LoginApi;
                 }
-                setChatroomsJoined(chatroomsJoined.content);
-                setChatroomsjoinedTotalPages(chatroomsJoined.totalPages);
+                setChatroomsJoined(chatroomsJoined.content || []);
+                setChatroomsjoinedTotalPages(chatroomsJoined.totalPages || 0);
             }
             catch(error){
                 console.log(error);
+                setChatroomsOwned([]);  // 错误时设置空数组
+                setChatroomsOwnedTotalPages(0);
             }
         }
-        getChatroomsJoined(chatroomsJoinedPage);
-    }, [csrfToken, loggedUser, chatroomsJoinedPage])
+        if(csrfToken) getChatroomsJoined(chatroomsJoinedPage);
+    }, [csrfToken,loggedUser, chatroomsJoinedPage])
 
     return(
         <main style={{backgroundColor: 'white',border: '2px solid #ccc', padding: '10px',boxShadow: '0 4px 6px #39373D'}}>
@@ -80,7 +93,7 @@ export default function Accueil(){
                     Vous pouvez voir vos Chatrooms dans <Link to="/listeChatroom_Owned">Chatrooms Owned</Link> et faire les operations.
                 </div>
                 <div>S'il ya des chatrooms que vous avez planifié n'ont pas etre affiché, c'est possible que ils ont deja expiré.</div>
-                {chatroomsOwned.length > 0 ? (
+                {chatroomsOwned.length>0? (
                     <>
                         <Table bordered hover variant="dark">
                         <thead>
@@ -120,7 +133,7 @@ export default function Accueil(){
                     Vous pouvez voir les Chatrooms que vous avez rejoint dans <Link to="/listeChatroom_Joined">Chatrooms Joined</Link> et faire les operations.
                 </div>
                 <div>S'il ya des chatrooms que vous avez rejoint n'ont pas etre affiché, c'est possible que ils ont deja expiré.</div>
-                {chatroomsJoined.length > 0 ? (
+                {chatroomsJoined.length>0? (
                 <>
                     <Table bordered hover variant="dark">
                     <thead>

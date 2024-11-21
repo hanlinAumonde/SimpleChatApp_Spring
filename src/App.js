@@ -17,10 +17,14 @@ import ListeChatroomJoined from "./Pages/ListeChatroomJoined";
 import ModifierChatroom from "./Pages/ModifierChatroom";
 import Chatroom from "./Pages/Chatroom";
 import Page404 from "./Pages/Page404";
+import { useSelector, useDispatch } from 'react-redux'
+import { selectCsrfToken, setNewToken } from './Components/reduxComponents/csrfReducer';
 
 function App() {
     const [user, setUser] = useState({});
-    const csrfTk = useRef(null);
+    //const csrfTk = useRef(null);
+    const csrfTokenSelector = useSelector(selectCsrfToken);
+    const dispatch = useDispatch();
 
     /**
      * Cette fct est utilisée pour déconnecter l'utilisateur
@@ -29,7 +33,7 @@ function App() {
         await fetch(properties.LogoutApi, {
             method: 'POST',
             headers: {
-                'X-XSRF-TOKEN': csrfTk.current
+                'X-XSRF-TOKEN': csrfTokenSelector
             },
             credentials: 'include'
         })
@@ -56,7 +60,8 @@ function App() {
                         window.location.href = properties.LoginApi;
                     }else{
                         console.log("user logged");
-                        csrfTk.current = Cookies.get('XSRF-TOKEN');
+                        const token = Cookies.get('XSRF-TOKEN');
+                        dispatch(setNewToken(token));
                         return response.json();
                     }
                 })
@@ -69,13 +74,13 @@ function App() {
         //on crée un timer pour récupérer l'utilisateur connecté toutes les 15 minutes
         const timer = setInterval(getLoggedUser, 1000*60*15);
         return () => clearInterval(timer);
-    }, [])
+    }, [dispatch,csrfTokenSelector])
 
     return (
         <>
             <Header/>
-            {csrfTk.current && user?
-            <LoginContext.Provider value={user}> <CsrfTokenContext.Provider value={csrfTk.current}>
+            {user?
+            <LoginContext.Provider value={user}> 
                 <Router> <Container fluid> <Row>
                     <Col xs={2}>
                         <Navigation logout={logout} />
@@ -93,7 +98,7 @@ function App() {
                         </Routes>
                     </Col>
                 </Row> </Container> </Router>
-            </CsrfTokenContext.Provider> </LoginContext.Provider>
+             </LoginContext.Provider>
             :
                 <h1 className="d-flex justify-content-center align-items-center">Chargement ...</h1>
             }

@@ -7,11 +7,14 @@ import {Badge, Col, ListGroup, Row, Form, Button, CloseButton} from "react-boots
 import ScrollBox from "../Components/ScrollBox";
 import styles from "../Styles/Chatroom.module.css";
 import {useParams,useLocation} from "react-router-dom";
+import {useSelector} from 'react-redux';
+import { selectCsrfToken } from "../Components/reduxComponents/csrfReducer";
 
 export default function Chatroom(){
     //le contexte pour le csrfToken et l'utilisateur connecté
     const loggedUser = useContext(LoginContext);
-    const csrfToken = useContext(CsrfTokenContext);
+    //const csrfToken = useContext(CsrfTokenContext);
+    const csrfToken = useSelector(selectCsrfToken);
 
     const webSocketClient = useRef(null);
     let { chatroomId } = useParams(); //récupérer l'id de la chatroom dans l'url
@@ -106,7 +109,7 @@ export default function Chatroom(){
         //on crée un timer pour récupérer tous les utilisateurs dans la chatroom toutes les 5 minutes
         const timer = setInterval(getAllUsersInChatroom,1000*60*5);
         return () => clearInterval(timer);
-    },[chatroomId, csrfToken, loggedUser]);
+    },[chatroomId, loggedUser]);
 
     /**
      * Cette fonction est utilisée pour traiter l'événement de fermer la page

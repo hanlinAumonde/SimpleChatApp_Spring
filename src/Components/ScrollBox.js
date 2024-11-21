@@ -21,7 +21,7 @@ export default function ScrollBox({ messages }) {
                                 className={styles.card}
                             >
                                 <Card.Header>
-                                    <div style={{ display: "flex", justifyContent: "space-between" , fontSize:'5px'}}>
+                                    <div style={{ display: "flex", justifyContent: "space-between" , fontSize:'8px'}}>
                                         <span>{msg.user.username}</span>
                                         <span style={{minWidth:'8px'}}></span>
                                         <span>{msg.timestamp}</span>
