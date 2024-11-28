@@ -128,6 +128,7 @@ export default function ModifierChatroom(){
             if(check !== "check passed"){
                 alert(check);
             }else {
+                console.log(updatedChatroom.startDate);
                 const response = await fetch(properties.ChatroomApi + chatroomId, {
                     "credentials": "include",
                     "headers": {
@@ -137,9 +138,9 @@ export default function ModifierChatroom(){
                     body: JSON.stringify({
                         "titre": chatroom.titre,
                         "description": chatroom.description,
-                        "usersInvited": usersInvited,
                         "startDate": updatedChatroom.startDate,
-                        "duration": updatedChatroom.duration
+                        "duration": updatedChatroom.duration,
+                        "usersInvited": usersInvited
                     }),
                     "method": "PUT"
                 });

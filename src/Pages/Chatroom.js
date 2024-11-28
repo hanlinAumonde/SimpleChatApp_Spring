@@ -157,25 +157,31 @@ export default function Chatroom(){
 
                 webSocketClient.current.onmessage = (event) => {
                     let message = JSON.parse(event.data);
-                    //mise à jour le status de connexion pour chaque utilisateur à la fois que le message de connexion/déconnexion est reçu
-                    if(message.messageType === 1) {
-                        const newUsers = allUsersInChatroom.map(user =>
-                            user.id === message.user.id ? {...user, isConnecting: 1} : user
-                        );
-                        setAllUsersInChatroom(newUsers);
-                    }else if(message.messageType === 2) {
-                        const newUsers = allUsersInChatroom.map(user =>
-                            user.id === message.user.id ? {...user, isConnecting: 0} : user
-                        );
-                        setAllUsersInChatroom(newUsers);
+                    if(message.messageType === 3){
+                        alert("Attention! " + message.message);
+                        webSocketClient.current.close();
+                        window.location.href = properties.LoginApi;
+                    }else{
+                        //mise à jour le status de connexion pour chaque utilisateur à la fois que le message de connexion/déconnexion est reçu
+                        if(message.messageType === 1) {
+                            const newUsers = allUsersInChatroom.map(user =>
+                                user.id === message.user.id ? {...user, isConnecting: 1} : user
+                            );
+                            setAllUsersInChatroom(newUsers);
+                        }else if(message.messageType === 2) {
+                            const newUsers = allUsersInChatroom.map(user =>
+                                user.id === message.user.id ? {...user, isConnecting: 0} : user
+                            );
+                            setAllUsersInChatroom(newUsers);
+                        }
+                        //ajouter un champ "sender" pour chaque message
+                        if(message.user.id === loggedUser.id){
+                            message = {...message, sender : 1};
+                        } else{
+                            message = {...message, sender : 0};
+                        }
+                        setMsgList(prevMsgs => [...prevMsgs, {index: prevMsgs.length, ...message}]);
                     }
-                    //ajouter un champ "sender" pour chaque message
-                    if(message.user.id === loggedUser.id){
-                        message = {...message, sender : 1};
-                    } else{
-                        message = {...message, sender : 0};
-                    }
-                    setMsgList(prevMsgs => [...prevMsgs, {index: prevMsgs.length, ...message}]);
                 }
 
                 webSocketClient.current.onerror = (event) => {
