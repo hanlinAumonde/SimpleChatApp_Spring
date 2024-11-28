@@ -79,12 +79,23 @@ export default function Chatroom(){
                         "X-XSRF-TOKEN": csrfToken
                     }
                 });
+                const statusResponse = await fetch(properties.ChatroomApi + chatroomId + "/status", {
+                    "credentials": "include",
+                    "headers": {
+                        "X-XSRF-TOKEN": csrfToken
+                    }
+                });
                 const allUsersInChatroom = await response.json();
+                const status = await statusResponse.json();
                 if(response.status === 401 || response.status === 500){
                     alert("Error code :" + response.status);
                     window.location.href = properties.LoginApi;
                 }
-                if(allUsersInChatroom.find(user => user.id === loggedUser.id)){
+                else if(!status){
+                    alert("Le chatroom n'est pas disponible maintenant!");
+                    window.location.href = properties.LoginApi;
+                }
+                else if(allUsersInChatroom.find(user => user.id === loggedUser.id)){
                     allUsersInChatroom.forEach(user => {
                         if(!("isConnecting" in user)) {
                             //initialiser le champ isConnecting

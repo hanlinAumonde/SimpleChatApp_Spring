@@ -31,7 +31,7 @@ export const getLoggedUserData = createAsyncThunk(
 
 export const logoutUser = createAsyncThunk(
     'user/logoutUser',
-    async (_, { getState }) => {
+    async (_, { getState, dispatch }) => {
         const csrfToken = getState().csrfToken.token;
         try{
             const response = await fetch(properties.LogoutApi,{
@@ -43,6 +43,7 @@ export const logoutUser = createAsyncThunk(
             });
             if(response.ok){
                 console.log("user logged out");
+                dispatch(clearUser());
                 window.location.href = properties.LoginApi;
             }
         }catch(error){

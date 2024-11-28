@@ -46,19 +46,21 @@ export default function ListeChatroomJoined(){
                         "X-XSRF-TOKEN": csrfToken
                     }
                 });
+                /*
                 const statusResponse = await fetch(properties.ChatroomApi + chatroom.id + "/status", {
                     "credentials": "include",
                     "headers": {
                         "X-XSRF-TOKEN": csrfToken
                     }
                 });
-                if (ownerResponse.status === 401 || statusResponse.status === 401) {
+                */
+                if (ownerResponse.status === 401) {
                     alert("Error code :" + ownerResponse.status + " - Reason : Not authorized");
                     window.location.href = properties.LoginApi;
                 }
                 const owner = await ownerResponse.json();
-                const status = await statusResponse.json();
-                return { ...chatroom, owner , chatroomStatus : status};
+                //const status = await statusResponse.json();
+                return { ...chatroom, owner};
             });
 
             chatroomsJoined = await Promise.all(promises);
@@ -148,7 +150,7 @@ export default function ListeChatroomJoined(){
                                     }
                                     <Dropdown.Divider />
                                     <Link to={`/Chatroom/${chatroom.id}`} style={{ textDecoration: 'none' }}>
-                                    <Dropdown.Item as="span" disabled={chatroom.chatroomStatus? !chatroom.chatroomStatus : true}>
+                                    <Dropdown.Item as="span">
                                         Entrer le chatroom
                                     </Dropdown.Item>
                                     </Link>
